@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://demo.cafebot.ai:8443/cafe-bot/resources/css/cafebot_font_style.css?jsversion=5112345">
+  <link rel="stylesheet" href="https://demo.cafebot.ai:8443/cafe-bot/resources/css/cafebot_left_panel.css?jsversion=yuyu">
+</head>
+<style>
+    .expert-modal{
+    background: #202226;
+    padding: 9px;
+    position: absolute;
+    z-index: 4;
+    min-width: 160px;
+    top: 4px;
+    left: 30px;
+    box-shadow: rgb(1, 4, 9) 0px 8px 24px;
+    }
+    .expert-modal .expert-modal-arrow
+    {
+    position: absolute;
+    display: block;
+    width: 0.8rem;
+    height: 0.4rem;
+    }
+    .expert-modal .expert-modal-arrow::before {
+    position: absolute;
+    content: "";
+    border-color: transparent;
+    border-style: solid;
+}
+.expert-modal-arrow::before {
+    right: 22px;
+    top: -18px;
+    border-width: 0.4rem 0.4rem 0.4rem 0;
+    border-right-color:#202226 !important;
+}
+.expert-modal-arrow{
+    position: absolute;
+    top: 0px;
+    transform: translate3d(0px, 18px, 0px);
+}
+.ml-2.cb-cursor{
+  position: relative;   
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    padding: 5px;
+}
+.ml-2.cb-cursor:hover{
+  background-color: hsla(0,0%,100%,0.1);
+}
+/* .cb-boot-icon-overlay, .cb-boot-icon-ripple {
+    width: 36px;
+    height: 36px;
+    position: absolute;
+    border-radius: 50%;
+}
+
+.cb-boot-icon-overlay {
+    opacity: 0;
+    background-color: hsla(0,0%,100%,0.1);
+}
+span.cb-cursor:hover .cb-boot-icon-overlay {
+    opacity: 1;
+} */
+.autofeaturelength, .autofeaturelength1{
+    max-height: 200px;
+    overflow: auto;
+    margin-right: -9px;
+}
+.autofeaturelength .cb-range-form-div, .autofeaturelength1 .cb-range-form-div{
+    margin-right: 12px;
+    margin-left: 4px;
+}
+.buttonclose{
+    position: absolute;
+    right: 10px;
+    /* top: 4px; */
+    background: #000;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    padding: 3px;
+}
+</style>
+<body>
+
+<div class="container">
+  <h2>Modal Example</h2>
+  <!-- Button to Open the Modal -->
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" onclick="expertsettingModal()">
+    Open modal
+  </button>
+  
+  
+  <div class="cb-range-Label">
+				<div class="form-inline">
+					<div class="cb-form">               
+						<label class="css-12xei9w">
+							<input type="checkbox" checked="checked" id="chkClass" onchange="MatricChange()" class="css-1alx94u form-control mb-2 mr-sm-2 mb-sm-0">
+							<span class="css-a2zrvp"></span> 
+							<span class="css-a3753h-Label">  Classification (Uncheck for Regression)</span>               
+						</label>
+					</div>
+				</div> 
+			</div>
+			<div class="cb-range-Label">
+				<div class="form-inline">
+					<div class="cb-form">               
+						<label class="css-12xei9w">
+							<input type="checkbox" checked="checked" id="chkTime" onchange="toggleTime()" class="css-1alx94u form-control mb-2 mr-sm-2 mb-sm-0">
+							<span class="css-a2zrvp"></span> 
+							<span class="css-a3753h-Label">  Time Series</span>               
+						</label>
+					</div>
+				</div> 
+			</div>
+			<div class="cb-range-Label">
+				<div class="form-inline">
+					<div class="cb-form">               
+						<label class="css-12xei9w">
+							<input type="checkbox" checked="checked" id="chkEngineering" onchange="toggleTime_()" class="css-1alx94u form-control mb-2 mr-sm-2 mb-sm-0">
+							<span class="css-a2zrvp"></span> 
+							<span class="css-a3753h-Label"> Enginerring Setting</span>               
+						</label>
+					</div>
+				</div> 
+			</div>
+
+  <!-- The Modal -->
+  <div class="modal" id="myModal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+      
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Modal Heading</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        
+        <!-- Modal body -->
+        <div class="modal-body">
+          <div class="os-tabs-w">
+                    <div class="os-tabs-controls cb-os-tabs">
+                      <ul class="nav nav-tabs smaller" id="navlength">
+                        <li class="nav-item">
+                          <a class="nav-link active" data-toggle="tab" href="#model_setting1" id="expertTab1">Classification</a>
+                        </li>
+                         <li class="nav-item">
+                          <a class="nav-link" data-toggle="tab" href="#model_setting2" id="expertTab2">Regression</a>
+                        </li> 
+                         <li class="nav-item">
+                          <a class="nav-link" data-toggle="tab" href="#model_setting3" id="expertTab3">Engineering Setting</a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" data-toggle="tab" href="#model_setting4" id="expertTab4">Time Series Setting</a>
+                        </li> 
+                      </ul>
+
+                    </div>
+                    <div class="tab-content">
+                      <div class="tab-pane active" id="model_setting1">
+
+                      <!-- <div id="maindiv"></div> -->
+						<div id="rowlength1">
+                        <div class="row">
+                          <div class="col">
+                           <div class="cb-range-Label">
+                            <span class="label"><div class="cb-range-text "> Auto   
+                              <div class="css-radio ml-3">
+                                <input type="radio" class="css-1kd3qvh" id="on" name="on" value="on" onchange="ischeckedfn(this.value);">
+                                <label class="css-iwo4qd" for="on">Off</label>                            
+                                <input type="radio" class="css-1kd3qvh" id="auto" name="on" value="auto" onchange="ischeckedfn(this.value);">
+                                <label class="css-iwo4qd" for="auto">Auto</label>
+                              </div>
+                            </div></span>
+                          </div>
+                        </div>
+                      </div>
+
+
+
+
+
+                                       
+
+                   
+                       
+                        <div class="row rowcount">
+                    <div class="col rowlength">
+                      <div class="cb-range-form-div">
+
+
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext1">AutoFeature Engineering</span> </div> </span>   
+                          <div class="css-radio">
+                          <input type="radio" class="css-1kd3qvh" id="autofutureauto" name="autofutureon" value="auto">
+                            <label class="css-iwo4qd" id="labelauto" for="autofutureauto">auto</label>
+                             <input type="radio" class="css-1kd3qvh" id="autofutureon" name="autofutureon" value="on">
+                            <label class="css-iwo4qd" id="labelon" for="autofutureon">on</label>
+                            <input type="radio" class="css-1kd3qvh" id="autofutureoff" name="autofutureon" value="off">
+                            <label class="css-iwo4qd" id="labeloff" for="autofutureoff">off</label>
+                            
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                    <div class="col rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext2">GLM Model</span> </div></span>  
+                          <div class="css-radio">
+                           <input type="radio" class="css-1kd3qvh" id="glmoauto" name="glmon" value="auto">  
+                            <label class="css-iwo4qd" id="glmlabelauto" for="glmoauto">auto</label> 
+                            <input type="radio" class="css-1kd3qvh" id="glmon" name="glmon" value="on">
+                            <label class="css-iwo4qd" id="glmlabelon" for="glmon">on</label>
+                            <input type="radio" class="css-1kd3qvh" id="glmoff" name="glmon" value="off">  
+                            <label class="css-iwo4qd" id="glmlabeloff" for="glmoff">off</label>    
+                                  
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                     <div class="col-5 rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext3">Decision Tree Model</span></div></span>  
+                          <div class="css-radio">
+                          <input type="radio" class="css-1kd3qvh" id="treeoauto" name="treeon" value="auto">             
+                            <label class="css-iwo4qd" id="treelabelauto" for="treeoauto">auto</label>
+                            <input type="radio" class="css-1kd3qvh" id="treeon" name="treeon" value="on">
+                            <label class="css-iwo4qd" id="treelabelon" for="treeon">on</label>
+                            <input type="radio"  class="css-1kd3qvh" id="treeoff" name="treeon" value="off">             
+                            <label class="css-iwo4qd" id="treelabeloff" for="treeoff">off</label>
+                            
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                    
+                 <div class="row rowcount">
+                    <div class="col rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext4">Randomforest Model</span></div></span>  
+                          <div class="css-radio">
+                           <input type="radio" class="css-1kd3qvh" id="forestauto" name="foreston" value="auto">
+                            <label class="css-iwo4qd" id="randomlabelauto" for="forestauto">auto</label> 
+                            <input type="radio" class="css-1kd3qvh" id="foreston" name="foreston" value="on">
+                            <label class="css-iwo4qd" id="randomlabelon" for="foreston">on</label>
+                            <input type="radio" class="css-1kd3qvh" id="forestoff" name="foreston" value="off">
+                            <label class="css-iwo4qd" id="randomlabeloff" for="forestoff">off</label> 
+                                       
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext5">ExtraTree Model</span></div></span>  
+                          <div class="css-radio">
+                            <input type="radio" class="css-1kd3qvh" id="extraauto" name="extraoff" value="auto">  
+                            <label class="css-iwo4qd" id="extralabelauto" for="extraauto">auto</label>   
+                            <input type="radio" class="css-1kd3qvh" id="extraon" name="extraoff" value="on">
+                            <label class="css-iwo4qd" id="extralabelon" for="extraon">on</label>
+                            
+                            <input type="radio" class="css-1kd3qvh" id="extraoff" name="extraoff" value="off">  
+                            <label class="css-iwo4qd" id="extralabeloff" for="extraoff">off</label>  
+                            
+                                   
+                          </div>
+                        </div>
+                      </div>      
+                    </div>
+                      <div class="col-5 rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext6">GBM Model</span></div></span>  
+                          <div class="css-radio">
+                             <input type="radio" class="css-1kd3qvh" id="gbmauto" name="gbmon" value="auto">             
+                            <label class="css-iwo4qd" id="gbmlabelauto" for="gbmauto">auto</label>
+                            <input type="radio" class="css-1kd3qvh" id="gbmon" name="gbmon" value="on">
+                            <label class="css-iwo4qd" id="gbmlabelon" for="gbmon">on</label>
+                            
+                            <input type="radio"  class="css-1kd3qvh" id="gbmoff" name="gbmon" value="off">             
+                            <label class="css-iwo4qd" id="gbmlabeloff" for="gbmoff">off</label>
+                            
+                           
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                   
+                  </div>
+
+                  <div class="row rowcount">
+                     <div class="col rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext7">XGBoost Model</span></div></span>  
+                          <div class="css-radio">
+                          <input type="radio" class="css-1kd3qvh" id="xgboauto" name="xgbon" value="auto">             
+                            <label class="css-iwo4qd" id="xgblabelauto" for="xgboauto">auto</label>
+                            <input type="radio" class="css-1kd3qvh" id="xgbon" name="xgbon" value="on">
+                            <label class="css-iwo4qd" id="xgblabelon" for="xgbon">on</label>
+                            <input type="radio"  class="css-1kd3qvh" id="xgboff" name="xgbon" value="off">             
+                            <label class="css-iwo4qd" id="xgblabeloff" for="xgboff">off</label>
+                            
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext8">Sampling strategy</span></div></span>  
+                          <div class="css-radio">
+                            <input type="radio" class="css-1kd3qvh" id="strategyauto" name="strategy" value="auto">
+                            <label class="css-iwo4qd" id="strategylabelauto" for="strategyauto">auto</label>
+                            <input type="radio" class="css-1kd3qvh" id="strategyover" name="strategy" value="over">
+                            <label class="css-iwo4qd" id="strategylabelover" for="strategyover">over</label> 
+                            <input type="radio" class="css-1kd3qvh" id="strategyunder" name="strategy" value="under">
+                            <label class="css-iwo4qd"  id="strategylabelunder" for="strategyunder">under</label>
+                            
+
+                          </div>
+                        </div>
+                      </div>
+                    </div>    
+                     <div class="col-5 rowlength">  
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext9">Missing Value Treatment</span></div></span>  
+                          <div class="css-radio">
+                           <input type="radio" class="css-1kd3qvh" id="missingauto" name="missingon" value="auto">  
+                            <label class="css-iwo4qd" id="missinglabelauto" for="missingauto">auto</label> 
+                            <input type="radio" class="css-1kd3qvh" id="missingmean" name="missingon" value="mean">
+                            <label class="css-iwo4qd" id="missinglabelmean" for="missingmean">mean</label>
+                            <input type="radio" class="css-1kd3qvh" id="missingmedian" name="missingon" value="median">  
+                            <label class="css-iwo4qd" id="missinglabelmedian" for="missingmedian">median</label>   
+                            <input type="radio" class="css-1kd3qvh" id="missingmode" name="missingon" value="mode">              
+                            <label class="css-iwo4qd" id="missinglabelmode" for="missingmode">mode</label>
+                            <input type="radio" class="css-1kd3qvh" id="missingoff" name="missingon" value="off">  
+                            <label class="css-iwo4qd" id="missinglabeloff" for="missingoff">off</label>    
+                                
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                   
+
+                  </div>
+                  
+                
+                 </div>
+
+                   
+           
+     </div> 
+             
+                   
+           
+  
+                   <div class="tab-pane" id="model_setting2">
+                   
+                       <div id="rowlength2">
+                         <div class="row">
+                          <div class="col">
+                           <div class="cb-range-Label">
+                            <span class="label"><div class="cb-range-text "> Auto   
+                              <div class="css-radio ml-3">
+                                <input type="radio" class="css-1kd3qvh" id="on_" name="on_" value="on" onchange="ischeckedfn(this.value);">
+                                <label class="css-iwo4qd" for="on_">Off</label>                            
+                                <input type="radio" class="css-1kd3qvh" id="auto_" name="on_" value="auto" onchange="ischeckedfn(this.value);">
+                                <label class="css-iwo4qd" for="auto_">Auto</label>
+                              </div>
+                            </div></span>
+                          </div>
+                        </div>
+                      </div>
+                        <div class="row rowcount">
+                    <div class="col rowlength">
+                      <div class="cb-range-form-div">
+
+
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext10">AutoFeature Regressor</span> </div> </span>   
+                          <div class="css-radio">
+                          <input type="radio" class="css-1kd3qvh" id="autofutureregressorauto" name="autofutureregressorauto" value="auto">
+                            <label class="css-iwo4qd" id="laberegressorlauto" for="autofutureregressorauto">auto</label>
+                             <input type="radio" class="css-1kd3qvh" id="autofutureregressoron" name="autofutureregressorauto" value="on">
+                            <label class="css-iwo4qd" id="laberegressorlon" for="autofutureregressoron">on</label>
+                            <input type="radio" class="css-1kd3qvh" id="autofutureregressoroff" name="autofutureregressorauto" value="off">
+                            <label class="css-iwo4qd" id="laberegressorloff" for="autofutureregressoroff">off</label>
+                            
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                    <div class="col rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext11">GLM Regressor</span> </div></span>  
+                          <div class="css-radio">
+                           <input type="radio" class="css-1kd3qvh" id="glmoregressorauto" name="glmoregressorauto" value="auto">  
+                            <label class="css-iwo4qd" id="glmregressorlabelauto" for="glmoregressorauto">auto</label> 
+                            <input type="radio" class="css-1kd3qvh" id="glmoregressoron" name="glmoregressorauto" value="on">
+                            <label class="css-iwo4qd" id="glmregressorlabelon" for="glmoregressoron">on</label>
+                            <input type="radio" class="css-1kd3qvh" id="glmoregressoroff" name="glmoregressorauto" value="off">  
+                            <label class="css-iwo4qd" id="glmregressorlabeloff" for="glmoregressoroff">off</label>    
+                                  
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                     <div class="col-5 rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext12">Decision Tree Regressor</span></div></span>  
+                          <div class="css-radio">
+                          <input type="radio" class="css-1kd3qvh" id="treeregressoroauto" name="treeregressoroauto" value="auto">             
+                            <label class="css-iwo4qd" id="treeregressorlabelauto" for="treeregressoroauto">auto</label>
+                            <input type="radio" class="css-1kd3qvh" id="treeregressoroon" name="treeregressoroauto" value="on">
+                            <label class="css-iwo4qd" id="treeregressorlabelon" for="treeregressoroon">on</label>
+                            <input type="radio"  class="css-1kd3qvh" id="treeregressorooff" name="treeregressoroauto" value="off">             
+                            <label class="css-iwo4qd" id="treeregressorlabeloff" for="treeregressorooff">off</label>
+                            
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                    
+                 <div class="row rowcount">
+                    <div class="col rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext13">Randomforest Regressor</span></div></span>  
+                          <div class="css-radio">
+                           <input type="radio" class="css-1kd3qvh" id="forestregressorauto" name="forestregressorauto" value="auto">
+                            <label class="css-iwo4qd" id="randomregressorlabelauto" for="forestregressorauto">auto</label> 
+                            <input type="radio" class="css-1kd3qvh" id="forestregressoron" name="forestregressorauto" value="on">
+                            <label class="css-iwo4qd" id="randomregressorlabelon" for="forestregressoron">on</label>
+                            <input type="radio" class="css-1kd3qvh" id="forestregressoroff" name="forestregressorauto" value="off">
+                            <label class="css-iwo4qd" id="randomregressorlabeloff" for="forestregressoroff">off</label> 
+                                       
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext14">ExtraTree Regressor</span></div></span>  
+                          <div class="css-radio">
+                            <input type="radio" class="css-1kd3qvh" id="extraregressorauto" name="extraregressorauto" value="auto">  
+                            <label class="css-iwo4qd" id="extraregressorlabelauto" for="extraregressorauto">auto</label>   
+                            <input type="radio" class="css-1kd3qvh" id="extraregressoron" name="extraregressorauto" value="on">
+                            <label class="css-iwo4qd" id="extraregressorlabelon" for="extraregressoron">on</label>
+                            
+                            <input type="radio" class="css-1kd3qvh" id="extraregressoroff" name="extraregressorauto" value="off">  
+                            <label class="css-iwo4qd" id="extraregressorlabeloff" for="extraregressoroff">off</label>  
+                            
+                                   
+                          </div>
+                        </div>
+                      </div>      
+                    </div>
+                      <div class="col-5 rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext15">GBM Regressor</span></div></span>  
+                          <div class="css-radio">
+                             <input type="radio" class="css-1kd3qvh" id="gbmregressorauto" name="gbmregressorauto" value="auto">             
+                            <label class="css-iwo4qd" id="gbmregressorlabelauto" for="gbmregressorauto">auto</label>
+                            <input type="radio" class="css-1kd3qvh" id="gbmregressoron" name="gbmregressorauto" value="on">
+                            <label class="css-iwo4qd" id="gbmregressorlabelon" for="gbmregressoron">on</label>
+                            
+                            <input type="radio"  class="css-1kd3qvh" id="gbmregressoroff" name="gbmregressorauto" value="off">             
+                            <label class="css-iwo4qd" id="gbmregressorlabeloff" for="gbmregressoroff">off</label>
+                            
+                           
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                   
+                  </div>
+
+                  <div class="row rowcount">
+                     <div class="col rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext16">XGBoost Regressor</span></div></span>  
+                          <div class="css-radio">
+                          <input type="radio" class="css-1kd3qvh" id="xgboregressorauto" name="xgboregressorauto" value="auto">             
+                            <label class="css-iwo4qd" id="xgbregressorlabelauto" for="xgboregressorauto">auto</label>
+                            <input type="radio" class="css-1kd3qvh" id="xgboregressoron" name="xgboregressorauto" value="on">
+                            <label class="css-iwo4qd" id="xgbregressorlabelon" for="xgboregressoron">on</label>
+                            <input type="radio"  class="css-1kd3qvh" id="xgboregressoroff" name="xgboregressorauto" value="off">             
+                            <label class="css-iwo4qd" id="xgbregressorlabeloff" for="xgboregressoroff">off</label>
+                            
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col rowlength">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext17">Sampling strategy</span></div></span>  
+                          <div class="css-radio">
+                            <input type="radio" class="css-1kd3qvh" id="strategyregressorauto" name="strategyregressorauto" value="auto">
+                            <label class="css-iwo4qd" id="strategyregressorlabelauto" for="strategyregressorauto">auto</label>
+                            <input type="radio" class="css-1kd3qvh" id="strategyregressorover" name="strategyregressorauto" value="over">
+                            <label class="css-iwo4qd" id="strategyregressorlabelover" for="strategyregressorover">over</label> 
+                            <input type="radio" class="css-1kd3qvh" id="strategyregressorunder" name="strategyregressorauto" value="under">
+                            <label class="css-iwo4qd"  id="strategyregressorlabelunder" for="strategyregressorunder">under</label>
+                            
+
+                          </div>
+                        </div>
+                      </div>
+                    </div>    
+                     <div class="col-5 rowlength">  
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext18">Missing Value Treatment</span></div></span>  
+                          <div class="css-radio">
+                           <input type="radio" class="css-1kd3qvh" id="missingregressorauto" name="missingregressorauto" value="auto">  
+                            <label class="css-iwo4qd" id="missingregressorlabelauto" for="missingregressorauto">auto</label> 
+                            <input type="radio" class="css-1kd3qvh" id="missingregressormean" name="missingregressorauto" value="mean">
+                            <label class="css-iwo4qd" id="missingregressorlabelmean" for="missingregressormean">mean</label>
+                            <input type="radio" class="css-1kd3qvh" id="missingregressormedian" name="missingregressorauto" value="median">  
+                            <label class="css-iwo4qd" id="missingregressorlabelmedian" for="missingregressormedian">median</label>   
+                            <input type="radio" class="css-1kd3qvh" id="missingregressormode" name="missingregressorauto" value="mode">              
+                            <label class="css-iwo4qd" id="missingregressorlabelmode" for="missingregressormode">mode</label>
+                            <input type="radio" class="css-1kd3qvh" id="missingrgressoroff" name="missingregressorauto" value="off">  
+                            <label class="css-iwo4qd" id="missingregressorlabeloff" for="missingrgressoroff">off</label>    
+                                
+                          </div>
+                        </div>
+                      </div>
+                    </div>                  
+				</div>
+                  
+                
+                 </div>
+
+                     
+                  </div> 
+				  
+				  <div class="tab-pane" id="model_setting3">
+                    <div class="row" id="labeldivbind3">
+
+                    </div>
+                  </div> 
+                  <div class="tab-pane" id="model_setting4">
+                    <div class="row" id="labeldivbind4">
+
+                    </div>
+                  </div>  
+                  
+                </div>
+              </div>
+
+
+            </div>
+            <div class="modal-footer">                  
+              <button class="cb-primary" type="button" id="btnok" onclick="save_button_new();"> Save changes</button>
+              <!--  <button class="cb-cancel" data-dismiss="modal" type="button"> Close</button> -->
+            </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  
+</div>
+<script src="expert-setting.js"></script>
+</body>
+</html>

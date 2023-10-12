@@ -1,0 +1,198 @@
+body{
+	color: #d8d9da !important;
+}
+ul,span,.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button{
+	font-family: 'Roboto', sans-serif;
+}
+a:hover {
+    color: #ffffff8a;
+    text-decoration: none;
+}
+.ui-widget-content {
+   /*  border:1px solid rgba(204, 204, 220, 0.25) !important; */
+   border:0 !important;
+    background: #0b0c0e;
+    
+}
+.grid-stack{
+	    background: #0b0c0e !important;
+}
+
+	.popup-container a{ 
+		color: #d8d9da;
+	}
+	.popup-container a: hover{ 
+		color: #fff;
+	}
+
+	.popup-header {
+		position: absolute;
+		/* min-height: 500px; */
+		height: fit-content;
+		width: 650px;
+		z-index: 1040;
+		background: #191b1e;
+	}
+	.drawer-header, .drawer-footer {
+		background:#202226;
+		/*border-bottom: 1px solid #dddddd;*/
+	}
+	.drawer-header, .drawer-footer {
+		position: relative;
+		padding: 30px;
+		/*box-shadow: 0px 1px 4px rgb(0 0 0 / 10%), 0px 2px 8px rgb(0 0 0 / 10%), 0px 0px 4px rgb(0 0 0 / 6%);*/
+		z-index: 2;
+	}
+	.drawer-footer{
+		padding: 12px;
+		display: flex;
+		justify-content: flex-end;
+		/*border-top: 1px solid #dddddd*/
+	}
+	.drawer-title-wrapper {
+		display: flex;
+		align-items: center;
+	}
+
+
+		.drop-down__button{
+			
+			color: #000;
+		}
+
+		
+		.sidenav {
+			
+			background-color: #181b1f !important; /* Black*/
+			border: 1px solid rgba(204, 204, 220, 0.15) !important;
+			
+		}
+
+		
+
+		/* When you mouse over the navigation links, change their color */
+		.sidenav a:hover, .offcanvas a:focus{
+			color: #f1f1f1;
+		}
+
+		ul.cb-dashboard-tab{
+			   /* width: 638px;*/
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    overflow-y: hidden;
+		}
+		ul.cb-dashboard-tab li span {
+    display: inline;
+    /*position: relative;*/
+    right: 2px;
+    top: 7px;
+    /* margin-right: 3px; */
+    /* width: 84px; */
+    /* margin-left: 15px; */
+}
+
+.cb-top-menu{
+	
+    border: 1px solid rgba(204, 204, 220, 0.25);
+    background: #292b2c;
+    color: #d8d9da;
+   
+}
+ul.ui-tabs-nav{
+	
+    background: #292b2c;
+}
+
+.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover {
+ 
+    background: rgb(61, 113, 217);
+}
+
+
+.label-text{
+	color: #d8d9da;
+}
+
+
+  .grid-stack-item-content{
+background-color: #fff !important;
+    border: 1px solid rgb(24 27 31) !important;
+}
+
+.chart-title p{
+	color:#d8d9da;
+}
+
+ul.chart-list li {
+
+    color:#d8d9da;
+}
+ .grid-stack-item-content{
+  background-color: #2a2a2b !important;
+    /* border: 1px solid #c5c5c5; */
+    /* box-shadow: 0 14px 28px rgb(0 0 0 / 25%), 0 10px 10px rgb(0 0 0 / 22%); */
+    /* box-shadow: 0 3px 6px rgb(0 0 0 / 16%), 0 3px 6px rgb(0 0 0 / 23%); */
+    box-shadow: 0 10px 20px rgb(0 0 0 / 19%), 0 6px 6px rgb(0 0 0 / 23%);
+}
+
+.tabfilter{
+
+    background:#292b2c;
+}
+
+
+.dropbtn {
+			/* background-color: #3498DB; */
+			color:#d8d9da;
+		}
+
+		.dropbtn:hover, .dropbtn:focus {
+    background-color: #181b1f;
+    color: #d8d9da;
+}
+
+
+ .box-css1{
+  padding:50px;
+  background:#2a2a2b;
+  margin-top:20px;
+  color:#d8d9da;
+  }
+  
+
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default, .ui-button, html .ui-button.ui-state-disabled:hover, html .ui-button.ui-state-disabled:active {
+    border: 1px solid rgb(140 140 140);
+    background: #292b2c;
+    font-weight: normal;
+    color: #d8d9da;
+}
+ .ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover {
+    background: #141518;
+}
+  .ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited, a.ui-button, a:link.ui-button, 
+  a:visited.ui-button, .ui-button,.dataTables_wrapper .dataTables_paginate .paginate_button, .dataTables_info{
+  color:#d8d9da !important;
+  }
+.cb-basic-height {
+    max-height: 245px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+table tbody tr.even {
+    background: #2a2a2b !important;
+}
+ .visibility-class{
+	visibility:visible;
+}
+.visibility-classremove{
+	visibility:hidden;
+}
+ .cb-primary {
+    background: #141518;
+    border: 1px solid rgb(140 140 140);
+}
+.css-a2zrvp {
+       background: rgb(11, 12, 14);
+    border: 1px solid rgb(44, 50, 53);
+}

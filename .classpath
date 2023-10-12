@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="target/classes" path="src/main/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
+		<attributes>
+			<attribute name="test" value="true"/>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/apache-poi.jar.zip"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/apache-poi-ooxml.jar.zip"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/apache-tomcat-9.0.64-embed.zip"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/batik-transcoder.jar.zip"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/hive-jdbc-2.3.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/HyJavaCharts-10-EVAL-C.zip"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/jar_files (4).zip"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/jar_files (5).zip"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/jdbc-2.5.5.1007.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/mssql-jdbc-8.4.1.jre8.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/mssql-jdbc-11.2.2.jre18.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/sax-2.0.1.jar.zip"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/spire_2.10.0-rc5-0.3.0-m6.jar.zip"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/MANSI WORKSPACE/mansi/charting jar files/charting jar files/spring-tx-5.3.20.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>

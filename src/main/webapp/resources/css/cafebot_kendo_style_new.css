@@ -1,0 +1,351 @@
+/*top bar css*/
+.top-bar.color-scheme-dark, .k-flatcolorpicker.k-group, .k-group, .k-menu, .k-menu .k-group, .k-popup.k-widget.k-context-menu {
+  background-color: #181b1f;
+}
+
+/*kendo select*/
+.kendo-select {
+  border: 0 !important;
+}
+
+.k-dropdown .k-state-focused, .k-filebrowser-dropzone, .k-list > .k-state-hover, .k-mobile-list .k-edit-label.k-check:active,
+.k-mobile-list .k-item > .k-label:active, .k-mobile-list .k-item > .k-link:active, .k-mobile-list .k-recur-view .k-check:active,
+.k-pager-wrap .k-link:hover, .k-scheduler .k-scheduler-toolbar ul li.k-state-hover, .k-state-hover, .k-state-hover:hover,
+.k-menu .k-state-active, .k-popup.k-context-menu.k-group .k-state-hover {
+  background-color: #22252b;
+}
+
+/*-------tab-strip-content----*/
+.k-tabstrip-items .k-item.k-state-hover {
+  background: none;
+  border-color: #000;
+}
+
+.k-content.k-state-active > .form-control {
+  font-size: 14px;
+  width: 80%;
+  border-radius: 5px;
+}
+
+/*------schedule model------*/
+.k-icon.k-i-calendar {
+  margin-top: 8px;
+}
+
+/*---dataobject model-----*/
+.k-edit-field input[type=password] {
+  height: 30px;
+  background: rgb(11, 12, 14);
+  color: #d8d9da;
+  outline: 0;
+  -webkit-appearance: none;
+  width: 174px;
+  border-radius: 4px;
+  border: 1px solid rgb(44, 50, 53);
+  width: 97.7%;
+}
+
+/*---mozilla scrollbar-----*/
+.k-grid-content, .k-splitter .k-scrollable, .table-responsive, #tiles, .ace_scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4e5659 #000;
+}
+
+/*---kendo button------*/
+.k-gantt-toolbar .k-button, .k-gantt > .k-header .k-link, .k-gantt > .k-header li, .k-grid .k-header .k-button, .k-scheduler .k-header .k-button,
+.k-scheduler .k-header .k-link, .k-scheduler .k-header li, .km-pane-wrapper .k-header .k-button {
+  background-color: #047bf8;
+  border: 1px solid transparent !important;
+  border-radius: 2px;
+}
+
+.k-grid .k-header .k-button.k-grid-add:hover {
+  background: #0368d2;
+  color: #ffffff;
+  box-shadow: rgba(24, 26, 27, 0.75) 0px 1px 2px;
+}
+
+/*----popup form----*/
+.k-window-titlebar.k-header, .k-edit-buttons.k-state-default {
+  background: #202226;
+}
+
+.k-input, .k-multiselect-wrap, .k-textbox > input, input.k-textbox, input.k-textbox:hover, textarea.k-textbox, textarea.k-textbox:hover {
+  background: rgb(11, 12, 14);
+}
+
+.k-autocomplete.k-state-default, .k-dropdown-wrap.k-state-default, .k-numeric-wrap.k-state-default, .k-picker-wrap.k-state-default {
+  background: rgb(11, 12, 14);
+  border: 1px solid rgb(44, 50, 53) !important;
+}
+
+/*popup design changes*/
+.k-overlay {
+  background: rgb(44, 50, 53);
+  inset: 0px;
+  opacity: 0.7;
+  -webkit-backdrop-filter: blur(1px) !important;
+          backdrop-filter: blur(1px) !important;
+}
+
+.k-widget.k-window {
+  box-shadow: rgb(0, 0, 0) 0px 0px 20px;
+  background: padding-box rgb(20, 22, 25);
+}
+
+.k-block, .k-draghandle, .k-grid-header, .k-grouping-header, .k-header, .k-pager-wrap, .k-treemap-tile, html .km-pane-wrapper .k-header {
+  /*background-color: rgb(32, 34, 38);*/
+  /* border-bottom: 1px solid rgb(32, 34, 38);*/
+}
+
+.k-popup-edit-form.k-window-content.k-content {
+  background: #181b1f;
+}
+
+.k-edit-form-container .editor-label, .k-edit-label {
+  float: left;
+  clear: both;
+  width: 27%;
+  padding: 0.4em 0 0.4em;
+  margin-left: 3%;
+  text-align: left;
+  color: #d8d9da;
+}
+
+.k-edit-field, .k-edit-form-container .editor-field {
+  float: right;
+  /* clear: right; */
+  width: 66%;
+  margin-right: 3%;
+  padding: 0 0 0.4em;
+  margin-top: 1.4%;
+}
+
+.k-edit-label label {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  flex-shrink: 0;
+  font-weight: 400;
+  font-size: 12px;
+  background-color: #22252b;
+  height: 33px;
+  line-height: 1.25;
+  margin-right: 4px;
+  border-radius: 2px;
+  justify-content: space-between;
+  border: none;
+  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
+
+.k-input[type=number], .k-input[type=text], .k-multiselect .k-input, .k-picker-wrap .k-input, .k-textbox, .k-textbox > input {
+  width: 100%;
+  border: 1px solid rgba(204, 204, 220, 0.2);
+  border-radius: 2px;
+}
+
+.k-input, .k-multiselect-wrap, .k-textbox > input, input.k-textbox,
+input.k-textbox:hover, textarea.k-textbox, textarea.k-textbox:hover {
+  background: rgb(11, 12, 14);
+  color: #d8d9da;
+}
+
+.k-datepicker .k-input, .k-timepicker .k-input, .k-picker-wrap.k-state-focused .k-input, .k-picker-wrap.k-state-hover .k-input {
+  background: rgb(11, 12, 14);
+}
+
+.k-popup-edit-form .k-edit-form-container .k-edit-field span.k-dropdown,
+.k-popup-edit-form .k-edit-form-container .k-edit-field .k-datepicker {
+  width: 100%;
+}
+
+.k-popup-edit-form .k-edit-form-container .k-edit-field .k-datepicker .k-picker-wrap input {
+  border: 0;
+}
+
+/*select dropdown style*/
+.k-list-container.k-popup.k-group.k-reset.k-state-border-up {
+  background: #181b1f;
+  border: 1px solid rgba(201, 209, 217, 0.08);
+}
+
+.k-list-filter > .k-textbox {
+  background: rgb(17, 18, 23);
+  border: 1px solid rgba(201, 209, 217, 0.15);
+}
+
+.k-list > .k-state-hover, .k-list > .k-state-selected.k-state-hover, .k-list > .k-state-focused, .k-list > .k-state-hover {
+  background-color: #343436;
+  color: #fff;
+}
+
+/*select dropdown end*/
+/*table design style*/
+#grid, .k-grid .k-alt, .cb-table, #imageRepositoryGrid, #deviceGroupGrid, #gridMain, #gridslice {
+  background-color: #181b1f;
+}
+
+.k-grid-header, .k-grid-footer, .k-filter-row th, .k-grid-header th.k-header {
+  background: rgb(34, 37, 43);
+}
+
+.k-grid-header .k-header .k-link, .k-grid-header th.k-header > .k-link {
+  color: #999;
+  font-size: 14px;
+  padding: 0.5em 0.6em 0.5em 0;
+}
+
+.k-grid {
+  font-size: 14px;
+}
+
+.k-grid tr:hover {
+  background: rgb(30, 33, 37);
+}
+
+.k-grid td {
+  font-size: 14px;
+  padding: 6px;
+  /* width: 150px;
+     min-width: 150px;*/
+  justify-content: flex-start;
+}
+
+.k-grid tr td {
+  border-width: 0px 0px 1px 0px;
+  border-style: solid;
+  border-color: #21293c;
+  font-size: 14px;
+  color: #d8d9da;
+}
+
+.k-grid td {
+  line-height: 1.4em;
+}
+
+.k-button.k-state-hover, .k-button:hover, .k-button.k-state-active, .k-button:active, .k-edit-form-container .k-button,
+.k-edit-form-container .k-primary:active, .k-popup .k-button,
+.k-popup .k-primary:active, .k-popup .k-primary:active:hover {
+  background: rgb(30, 33, 37);
+  /*border: 1px solid rgba(201,209,217,.08);*/
+}
+
+.k-grid-header th.k-header {
+  padding: 6px;
+  /* width: 150px;*/
+}
+
+.k-popup-edit-form .k-edit-form-container .k-edit-field .k-datepicker {
+  width: 100%;
+}
+
+.k-popup-edit-form .k-edit-form-container .k-edit-field .k-datepicker .k-picker-wrap .k-input {
+  border: 0;
+}
+
+.cb-user {
+  margin-top: 3.3% !important;
+  /* margin-left: auto;
+   margin-right: auto;*/
+  vertical-align: middle;
+}
+
+.cb-checkbox {
+  margin-top: 3.5%;
+}
+
+.cb-btn-dark {
+  margin-top: 1%;
+}
+
+/*table filter input*/
+.k-numerictextbox .k-select {
+  background: rgb(11, 12, 14);
+  border-color: #2c3235;
+  border-radius: 2px;
+}
+
+.passwordtxt {
+  width: 97%;
+  overflow: hidden;
+  background: none;
+  border: none;
+}
+
+.vertical-kendo-design .k-state-active, .vertical > .k-tabstrip-items > li.k-item.k-state-active {
+  border-top: 0;
+  border-left: 2px solid transparent;
+  border-left-color: #047bf8;
+  border-top-color: rgba(204, 204, 220, 0.12);
+  border-bottom-color: rgba(204, 204, 220, 0.12);
+}
+
+/*tabcontent background*/
+.k-tabstrip .k-content.k-state-active {
+  background-color: #181b1f;
+  color: #d8d9da;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(204, 204, 220, 0.12);
+}
+
+.k-panelbar .k-tabstrip-items .k-state-active, .k-tabstrip-items .k-state-active {
+  background-color: #181b1f;
+  background-image: none;
+  border-top-color: #047bf8;
+  border-right-color: rgba(204, 204, 220, 0.12);
+  border-left-color: rgba(204, 204, 220, 0.12);
+}
+
+.k-autocomplete, .k-block, .k-calendar .k-link, .k-calendar td, .k-calendar-container, .k-colorpicker,
+.k-combobox, .k-datepicker, .k-datetimepicker, .k-drag-clue, .k-dropdown, .k-dropdown-wrap, .k-editor-inline,
+.k-grid .k-filter-options, .k-grouping-header .k-group-indicator, .k-inline-block, .k-list-container,
+.k-multiselect, .k-notification, .k-numeric-wrap, .k-numerictextbox, .k-picker-wrap, .k-slider-selection,
+.k-slider-track, .k-textbox, .k-tile, .k-timepicker, .k-tooltip, .k-touch-scrollbar, .k-treeview .k-in,
+.k-upload, .k-window, .k-window-action, .k-window-titleless .k-window-content {
+  border-radius: 2px;
+}
+
+.k-dropdown-wrap .k-input {
+  padding: 0.32em 0;
+}
+
+/* ///  filter */
+.k-filter-help-text ~ label {
+  margin-right: 4px;
+}
+
+.k-filter-help-text ~ label input[type=radio] {
+  margin: 4px 3px 0 0;
+}
+
+.k-chart-crosshair-tooltip, .k-chart-shared-tooltip, .k-widget.k-tooltip {
+  background-color: #000;
+  border-color: #000;
+}
+
+.k-callout-s {
+  border-top-color: #000;
+}
+
+/*kendo popup input width 28/11/2022*/
+.k-popup-edit-form .k-edit-form-container .k-edit-field .k-numerictextbox {
+  width: 100%;
+}
+
+.k-popup-edit-form .k-edit-form-container .k-edit-field .k-numerictextbox .k-numeric-wrap input {
+  border: 0;
+}
+
+/*kendo cancelbutton*/
+.k-edit-form-container .k-button.k-grid-cancel {
+  padding: 0px 10px;
+  height: 28px;
+  line-height: 26px;
+}
+
+/*8/5/2023*/
+.cb-left-pannelwidth .k-tabstrip-wrapper .k-widget, .cb-left-pannelwidth .k-tabstrip-wrapper .k-widget * {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}/*# sourceMappingURL=cafebot_kendo_style_new.css.map */

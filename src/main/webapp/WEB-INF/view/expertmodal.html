@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://demo.cafebot.ai:8443/cafe-bot/resources/css/cafebot_font_style.css?jsversion=5112345">
+  <link rel="stylesheet" href="https://demo.cafebot.ai:8443/cafe-bot/resources/css/cafebot_left_panel.css?jsversion=yuyu">
+</head>
+<style>
+    .expert-modal{
+    background: #202226;
+    padding: 9px;
+    position: absolute;
+    z-index: 4;
+    min-width: 160px;
+    top: 4px;
+    left: 30px;
+    box-shadow: rgb(1, 4, 9) 0px 8px 24px;
+    }
+    .expert-modal .expert-modal-arrow
+    {
+    position: absolute;
+    display: block;
+    width: 0.8rem;
+    height: 0.4rem;
+    }
+    .expert-modal .expert-modal-arrow::before {
+    position: absolute;
+    content: "";
+    border-color: transparent;
+    border-style: solid;
+}
+.expert-modal-arrow::before {
+    right: 22px;
+    top: -18px;
+    border-width: 0.4rem 0.4rem 0.4rem 0;
+    border-right-color:#202226 !important;
+}
+.expert-modal-arrow{
+    position: absolute;
+    top: 0px;
+    transform: translate3d(0px, 18px, 0px);
+}
+.ml-2.cb-cursor{
+  position: relative;   
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    padding: 5px;
+}
+.ml-2.cb-cursor:hover{
+  background-color: hsla(0,0%,100%,0.1);
+}
+/* .cb-boot-icon-overlay, .cb-boot-icon-ripple {
+    width: 36px;
+    height: 36px;
+    position: absolute;
+    border-radius: 50%;
+}
+
+.cb-boot-icon-overlay {
+    opacity: 0;
+    background-color: hsla(0,0%,100%,0.1);
+}
+span.cb-cursor:hover .cb-boot-icon-overlay {
+    opacity: 1;
+} */
+</style>
+<body>
+
+<div class="container">
+  <h2>Modal Example</h2>
+  <!-- Button to Open the Modal -->
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+    Open modal
+  </button>
+
+  <!-- The Modal -->
+  <div class="modal" id="myModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+      
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Modal Heading</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        
+        <!-- Modal body -->
+        <div class="modal-body">
+          <div class="os-tabs-w">
+                    <div class="os-tabs-controls cb-os-tabs">
+                      <ul class="nav nav-tabs smaller">
+                        <li class="nav-item">
+                          <a class="nav-link active" data-toggle="tab" href="#model_setting" id="expertTab1">Expert Setting</a>
+                        </li>
+                         <li class="nav-item">
+                          <a class="nav-link" data-toggle="tab" href="#model_setting1" id="expertTab2">Expert Setting2</a>
+                        </li> 
+                        <li class="nav-item">
+                          <a class="nav-link" data-toggle="tab" href="#model_setting2" id="expertTab3">Expert Setting3</a>
+                        </li> 
+                      </ul>
+
+                    </div>
+                    <div class="tab-content">
+                      <div class="tab-pane active" id="model_setting">
+
+                        <div class="row">
+                          <div class="col">
+                           <div class="cb-range-Label">
+                            <span class="label"><div class="cb-range-text "> Auto   
+                              <div class="css-radio ml-3">
+                                <input type="radio" class="css-1kd3qvh" id="on" name="on" value="on" onchange="ischeckedfn(this.value);">
+                                <label class="css-iwo4qd" for="on">Off</label>                            
+                                <input type="radio" class="css-1kd3qvh" id="auto" name="on" value="auto" onchange="ischeckedfn(this.value);">
+                                <label class="css-iwo4qd" for="auto">Auto</label>
+                              </div>
+                            </div></span>
+                          </div>
+                        </div>
+                      </div>
+                                       
+
+                   <div class="row" style="position:relative;">
+                    <div class="col">
+                      <div class="cb-range-form-div">
+                        <div class="cb-range-Label">
+                          <span class="label"><div class="cb-range-text" ><span id="autofeaturedivtext1">Randomforest Models</span><span class="ml-2 cb-cursor" ><i class="fa fa-plus-circle" id="autoTab1" onclick="openTab(1)"></i>
+                          <div class="expert-modal" id="openTab_1" style="display:none">
+                                <div class="expert-modal-arrow"></div>
+							                    <div id="auto_featurediv1"></div>
+                        </div></span>  
+                          </div>
+                          <div class="css-radio">
+                           <input type="radio" class="css-1kd3qvh" id="forestauto" name="foreston" value="auto">
+                           <label class="css-iwo4qd" id="randomlabelauto" for="forestauto">Auto</label>  
+                           <input type="radio" class="css-1kd3qvh" id="foreston" name="foreston" value="on">
+                           <label class="css-iwo4qd" id="randomlabelon" for="foreston">On</label>
+                           <input type="radio" class="css-1kd3qvh" id="forestoff" name="foreston" value="Off">
+                           <label class="css-iwo4qd" id="randomlabeloff" for="forestoff">Off</label> 
+
+                         </div>
+                       </div>
+                    </div>
+                   </div>
+                   <div class="col">
+                    <div class="cb-range-form-div">
+                      <div class="cb-range-Label">
+                        <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext2">ExtraTree Models </span>
+                        <span class="ml-2 cb-cursor"  ><i class="fa fa-plus-circle" id="autoTab2" onclick="openTab(2)"></i>
+							                    <div class="expert-modal" id="openTab_2" style="display:none">
+                                    <div class="expert-modal-arrow"></div>
+                                    <div id="auto_featurediv2"></div>
+                                   </div> 
+							                </span>
+                        </div></span>  
+                        <div class="css-radio">
+                         <input type="radio" class="css-1kd3qvh" id="extraauto" name="extraoff" value="auto">  
+                         <label class="css-iwo4qd" id="extralabelauto" for="extraauto">Auto</label>    
+                         <input type="radio" class="css-1kd3qvh" id="extraon" name="extraoff" value="on">
+                         <label class="css-iwo4qd" id="extralabelon" for="extraon">On</label>
+                         <input type="radio" class="css-1kd3qvh" id="extraoff" name="extraoff" value="Off">  
+                         <label class="css-iwo4qd" id="extralabeloff" for="extraoff">Off</label>  
+
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+                 <div class="col-5">
+                  <div class="cb-range-form-div">
+                    <div class="cb-range-Label">
+                      <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext3">GBM Models </span>
+                      <span class="ml-2 cb-cursor"  ><i class="fa fa-plus-circle" id="autoTab3" onclick="openTab(3)"></i>
+							                    <div class="expert-modal" id="openTab_3" style="display:none">
+                                    <div class="expert-modal-arrow"></div>
+                                    <div id="auto_featurediv3"></div>
+                                   </div> 
+							                </span>
+                      </div></span> 
+                      </div> 
+                      <div class="css-radio">
+                       <input type="radio" class="css-1kd3qvh" id="gbmauto" name="gbmon" value="auto">             
+                       <label class="css-iwo4qd" id="gbmlabelauto" for="gbmauto">Auto</label>
+                       <input type="radio" class="css-1kd3qvh" id="gbmon" name="gbmon" value="on">
+                       <label class="css-iwo4qd" id="gbmlabelon" for="gbmon">On</label>
+                       <input type="radio"  class="css-1kd3qvh" id="gbmoff" name="gbmon" value="Off">             
+                       <label class="css-iwo4qd" id="gbmlabeloff" for="gbmoff">Off</label>
+
+                     </div>
+                   </div>
+                
+               </div>
+               
+             </div>
+
+             <div class="row">                    
+               <div class="col-3">
+                <div class="cb-range-form-div">
+                  <div class="cb-range-Label">
+                    <span class="label"><div class="cb-range-text"><span id="autofeaturedivtext4">XGBoost Models</span> 
+                    <span class="ml-2 cb-cursor"  ><i class="fa fa-plus-circle" id="autoTab4" onclick="openTab(4)"></i>
+							                    <div class="expert-modal" id="openTab_4" style="display:none">
+                                    <div class="expert-modal-arrow"></div>
+                                    <div id="auto_featurediv4"></div>
+                                   </div> 
+							                </span>
+                    </div></span>  
+                    </div>
+                    <div class="css-radio">
+                     <input type="radio" class="css-1kd3qvh" id="xgboauto" name="xgbon" value="auto">             
+                     <label class="css-iwo4qd" id="xgblabelauto" for="xgboauto">Auto</label>
+                     <input type="radio" class="css-1kd3qvh" id="xgbon" name="xgbon" value="on">
+                     <label class="css-iwo4qd" id="xgblabelon" for="xgbon">On</label>
+                     <input type="radio"  class="css-1kd3qvh" id="xgboff" name="xgbon" value="Off">             
+                     <label class="css-iwo4qd" id="xgblabeloff" for="xgboff">Off</label>
+
+                   </div>
+                 </div>
+             </div>           
+             
+           </div>                    
+           
+     </div> 
+                   <div class="tab-pane" id="model_setting1">
+                    <h3>Menu 1</h3>
+                    <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                  </div> 
+				  
+				  <div class="tab-pane" id="model_setting2">
+                    <h3>Menu 1</h3>
+                    <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                  </div> 
+                  
+                </div>
+              </div>
+
+
+            </div>
+            <div class="modal-footer">                  
+              <button class="cb-primary" type="button" id="btnok" onclick="savebtn();"> Save changes</button>
+              <!--  <button class="cb-cancel" data-dismiss="modal" type="button"> Close</button> -->
+            </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  
+</div>
+<script src="expert-setting.js"></script>
+</body>
+</html>

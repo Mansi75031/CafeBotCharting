@@ -1,0 +1,83 @@
+<!-- <!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Monaco editor</title>
+<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/editor/editor.main.min.css">
+</head>
+<body>
+<div id="container" style="height:400px;border:1px solid black;"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/loader.min.js"></script>
+<script>
+// require is provided by loader.min.js.
+require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs' }});
+require(["vs/editor/editor.main"], () => {
+  monaco.editor.create(document.getElementById('container'), {
+    value: `function x() {
+  console.log("Hello world!");
+  
+}`,
+    language: 'javascript',
+    theme: 'vs-dark',
+  });
+});
+</script>
+</body>
+</html> -->
+
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Monaco editor no loader</title>
+<link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/editor/editor.main.min.css">
+</head>
+<body>
+<div id="container" style="height:400px;border:1px solid black;"></div>
+<script>var require = { paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs' } }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/loader.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/editor/editor.main.nls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/editor/editor.main.js"></script>
+
+<script src="
+https://cdn.jsdelivr.net/npm/pypyjs@0.4.1/lib/pypyjs.min.js
+"></script>
+
+
+<script src="
+https://microsoft.github.io/monaco-editor/runtime.js
+"></script>
+
+<script src="
+https://microsoft.github.io/monaco-editor/node_modules/monaco-editor/min/vs/basic-languages/python/python.js
+"></script>
+
+
+<script>
+monaco.editor.create(document.getElementById('container'), {
+  value: `function x() {
+	  import banana
+
+
+	  class Monkey:
+	      # Bananas the monkey can eat.
+	      capacity = 10
+	      def eat(self, n):
+	          """Make the monkey eat n bananas!"""
+	          self.capacity -= n * banana.size
+
+	      def feeding_frenzy(self):
+	          self.eat(9.25)
+	          return "Yum yum"
+
+	  
+	  
+  
+}`,
+  language: 'python',
+  theme: 'vs-dark',
+});
+</script>
+</body>
+</html>

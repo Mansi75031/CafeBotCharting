@@ -1,0 +1,3395 @@
+package in.easydata.controller;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.hyjavacharts.chart.Highchart;
+
+import in.easydata.charts.HighchartsBarNStackBar;
+import in.easydata.charts.HighchartsLine;
+import in.easydata.charts.HighchartsPie;
+
+import in.easydata.charts.SQLPojo;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.fasterxml.jackson.databind.*;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.hyjavacharts.chart.Highchart;
+import com.hyjavacharts.model.common.themes.DarkUnica;
+import com.hyjavacharts.model.common.themes.HighchartTheme;
+import com.hyjavacharts.model.highcharts.series.seriespie.Data;
+
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.nio.charset.StandardCharsets;
+import in.easydata.*;
+
+@Controller
+public class Demo {
+
+	static DBConClickHouse dbcon = new DBConClickHouse();
+	static Connection con = dbcon.getConnection(); 
+	
+	static DBconnection dbconpg = new DBconnection();
+	static Connection conpg = dbconpg.getConnection();
+	static Connection conpg2 = dbconpg.getConnection_2();
+	
+	
+	/**
+	 *  
+	 * @return
+	 */
+//	@RequestMapping("/")
+//	public ModelAndView home() {
+//		return new ModelAndView("home");
+//	}
+
+	/**
+	 * 
+	 * @param chartName
+	 * @return
+	 */
+	
+	@RequestMapping("/")
+	public ModelAndView displayChart(HttpServletRequest request) {
+
+		/*
+		 * String path; try { // path =
+		 * request.getSession().getServletContext().getResource("/resources")+
+		 * "edalogo.png"; System.out.println(path); } catch (MalformedURLException e) {
+		 * // TODO Auto-generated catch block e.printStackTrace(); }
+		 */
+
+		//Highchart hc = null; 
+
+		/*
+		 * if (chartName.equals("line")) { hc = new HighchartsLine().configure(); } else
+		 * { hc = new HighchartsPie().configure(); }
+		 */
+
+		Map<String, Object> chartModel = new HashMap<String, Object>();
+
+		/*
+		 * if (chartName.equals("line")) { hc = new HighchartsLine().configure();
+		 * hc.setTheme(HighchartTheme.DARK_UNICA); //chartOptionsJs =
+		 * hc.chartOptionsToJs(); //chartModel.put("setChartSchema", chartSchemaLine());
+		 * } else //Pie { hc = new HighchartsPie().configure(getSeriesData(""));
+		 * hc.setTheme(HighchartTheme.DARK_UNICA); //chartOptionsJs =
+		 * hc.chartOptionsToJs(); //chartModel.put("setChartSchema", chartSchemaPie());
+		 * }
+		 */
+		// String globalOptions = hc.globalOptionsToJs();
+		// String chartOptions = hc.chartOptionsToJs();
+
+		/*
+		 * chartModel.put("chartName", chartName); chartModel.put("globalOptions",
+		 * globalOptions); chartModel.put("chartOptions", chartOptions);
+		 */
+
+		chartModel.put("setChart", "true");
+		chartModel.put("setTable", "true");
+		// chartModel.put("setChartType", "true");
+		chartModel.put("setData", tableSchema());
+		chartModel.put("setData_", "");
+		//chartModel.put("setData_", getDataCSV());
+
+		return new ModelAndView("chart", "model", chartModel);
+	}
+
+	
+	@RequestMapping("/dashboard")
+	public ModelAndView displayDash(HttpServletRequest request) throws JsonMappingException, JsonProcessingException {
+			
+		Map<String, Object> tabModel = new HashMap<String, Object>();
+		
+		tabModel.put("setData", buildTab("1"));
+		
+		//ModelAndView modelview = new ModelAndView();
+		//modelview.setViewName("/dashboard");
+		
+		return new ModelAndView("dashboard", "model", tabModel);
+		//return modelview;
+	}
+	
+	public String buildTab(String dashID) throws JsonMappingException, JsonProcessingException	
+	{
+		
+		PreparedStatement ps = null;
+		String filequery = " select id, position_json, tabscount,dashboard_title from dashboards where id = " + dashID;
+		List<ChartEntity> list = new ArrayList<ChartEntity>();
+		int id=0;    
+	    String position_json="";
+	    String dashboard_title ="";
+	    //int tabscount=0;
+		try {
+			ps = conpg.prepareStatement(filequery);
+		    ResultSet rs = ps.executeQuery();
+		    
+			while (rs.next()) 
+			{
+				id = rs.getInt(1);
+				position_json = rs.getString(2);
+				dashboard_title = rs.getString(4);
+				//tabscount=rs.getInt(3);
+			}     
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		List<ChartEntity> listofcharts = getDashCharts("1");
+		
+		
+		JsonFactory jsonFactory = new JsonFactory();
+		ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
+
+		JsonNode arrayNode = objectMapper.readTree(position_json);
+     
+		
+		
+		String chartlist ="<div id='btnpanel' style='float:right;'><label>Dashboard title </label><input type='text' name='dashName' id='dashName'  value='"+dashboard_title+"'  placeholder='dashboard name' /><input type='hidden' name='dashid' id='dashid' value='"+dashID+"' /><label>Add chart </label><select id ='chartlist'   onchange='addnewChart();' >";
+		String chartoption = "<option value='0'>--select chart--</option>";
+		for (int k=0; k<listofcharts.size() ;k++) 
+		{
+			if (listofcharts.get(k).getIsoriginal()==1) 
+			{
+				chartoption +="<option value='"+listofcharts.get(k).getId()+"#_#"+listofcharts.get(k).getQuery_context()+"#_#"+listofcharts.get(k).getViz_type()+"#_#"+listofcharts.get(k).getDatasource_name()+"#_#"+listofcharts.get(k).getContainerid()+"#_#"+listofcharts.get(k).getFilter_context() +"'>"+listofcharts.get(k).getSlice_name()+"</option>";
+			}
+		}
+
+		String savebtn = "<input type=\"button\" style=\"margin:5px;float:right;\" onClick=\"saveDash();\" value=\"Save\"></button>";
+
+		chartlist = chartlist+chartoption+"</select>"+savebtn+"</div>";
+		
+		
+		// FOR PIE
+		int tabscount=0;
+		String tabStrScript = "<script>var tabcount="+tabscount+";</script>";
+		String tabStrLst = "<ul><input type=\"button\" style=\"margin:5px;\" onClick=\"addtab(tabcount);\" value=\"+\"></button>"+chartlist+"";
+		String tabStrDiv="";
+		String complete="";
+		String charts="";
+		if (arrayNode.isArray()) {
+			//System.out.println("dashjsonNode"+arrayNode);
+			
+			for (JsonNode jsonNode : arrayNode) 
+			{
+			
+				
+				tabscount++;
+				//javascript 
+				tabStrScript = "<script>var tabcount="+tabscount+";</script>";
+				//System.out.println("dashchartjsonNode"+jsonNode);				
+				
+				//tabbid
+				String tabid=jsonNode.get("tabid").asText();
+				String tabname=jsonNode.get("tabname").asText();
+				//tab strip ul				
+				tabStrLst = tabStrLst 
+							+ "<li><a href=\"#"+tabid + "\">"
+										+tabname + "</a></li>";
+				
+				tabStrDiv = tabStrDiv + "<div id=\""+tabid +"\" data-tabname=\""+ tabname + "\"><div id=\"grid"+ tabid + "\">"
+						+ "<div class=\"grid-stack\"></div></div></div>";
+				
+				
+				//chart level
+				JsonNode arrayNode1 = jsonNode.get("childs");								
+				for (JsonNode jsonNode1 : arrayNode1) {
+					int chartId = Integer.parseInt(jsonNode1.get("chartId").asText());
+					String x=jsonNode1.get("x").asText();					
+					String y=jsonNode1.get("y").asText();
+					String w=jsonNode1.get("w").asText();
+					String h=jsonNode1.get("h").asText();
+					
+					System.out.println("chartId"+chartId);		
+					
+					ChartEntity ch = listofcharts.stream().filter(a -> a.getId() == chartId).collect(Collectors.toList()).get(0);
+					
+					charts = charts + "grids["+ (tabscount-1) +"].addWidget({x:"+x+",y:"+y+",w:"+w+",h:"+h+", content: '<div id=\"" + ch.getContainerid() +"\" data-chartid=\""+ chartId +"\"></div>'});";	
+					charts = charts + "AjaxChart("
+					+ch.getQuery_context()+",'"
+					+ch.getViz_type()+"','" 
+					+ch.getDatasource_name()+"','" 
+					+ ch.getContainerid()+"',"
+					+ ch.getFilter_context() + ");";
+										  
+				}
+				//System.out.println(charts + "--size" + jsonNode.size()); 
+				
+				
+
+				//ObjectMapper childMapper = new ObjectMapper();
+				
+				//JsonNode jNode = childMapper.readTree(jsonNode.get("childs").asText());
+				
+				//System.out.println("tab---" + tabid + "---" + "--size" + jsonNode.size()); 
+//				String aggFieldNode = jNode.get("Agg").asText();
+
+			}
+			complete=tabStrScript+tabStrLst+"</ul>" + tabStrDiv 
+				+ "\n\r<script>let grids = GridStack.initAll({animate: true,float: true, resizable: { handles: 'all'} });" 
+			+ charts + "</script>";
+						
+			
+									
+		}
+		return complete;
+		//if new dash create one tab only
+//		String tabs="<script>var tabcount=2;</script>"
+//					+ "<ul><input type=\"button\" style=\"margin:5px;\" onClick=\"addtab(tabcount);\" value=\"+\"></button>"+
+//					"<li><a href=\"#tabs-1\">Dash 1</a></li>"+
+//					"<li><a href=\"#tabs-2\">Dash 2</a></li>"+
+//					"</ul>"+
+//					"<div id=\"tabs-1\">"
+//						+ "<div id=\"gridCont1\">"
+//							+ "<div class=\"grid-stack\"></div>"
+//						+ "</div>"
+//					+ "</div>"
+//					+ "<div id=\"tabs-2\">"
+//					+ "<div id=\"gridCont2\">"
+//					+ "<div class=\"grid-stack\"></div>"
+//					+ "</div>"
+//					+ "</div>";
+//		
+//		return tabs;
+	}
+	
+	
+	@RequestMapping(value = "/buildTabDiv", method = RequestMethod.POST)
+	@ResponseBody
+	public String buildTabDiv(@RequestParam String varDim,String _charttype,
+			String _table,String _containerID,String varDimFilter,int chartid,
+			int tabscount) throws JsonMappingException, JsonProcessingException	
+	{
+		
+			String complete="";
+		    String charts="";
+		
+					String x="6";					
+					String y="0";
+					String w="6";
+					String h="4";
+					
+					System.out.println("chartId"+chartid);		
+					
+					String uuid= "conea2a4e28";//"con"+UUID.randomUUID().toString().split("-")[0]; //Generates random UUID  
+					
+					charts = charts + "grids["+ (tabscount-1) +"].addWidget({x:"+x+",y:"+y+",w:"+w+",h:"+h+", content: '<div id=\"" + uuid +"\" data-chartid=\""+ chartid +"\"></div>'});";	
+					//charts = charts + "AjaxChart("+varDim+",'"+_charttype+"','"+_table+"','"+ uuid+"',"+ varDimFilter + ");";
+										  
+		complete = "\n\r<script>"+ charts + "</script>";
+						
+		return complete;
+
+	}
+	
+	@RequestMapping(value = "/savechart", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<?> saveChart(@RequestParam String chartName, String fieldsprop,
+			String charttype, String filterprop,
+			String tablename,
+			int dashboardid,String tabname,String tabid,String chartNametxt,int chart_id
+			) throws JsonMappingException, JsonProcessingException {
+		//System.out.println("btn save pressed");
+		String sqlQuery = "";
+		int msg =0;
+		int sliceid= 0;
+		String newPos_json ="";
+		String slicename ="";
+		PreparedStatement ps = null;
+		String chart_type = chartType(charttype);
+		int versionDb  = -1;
+		try {
+			JsonFactory jsonFactory = new JsonFactory();
+			ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
+
+			JsonNode arrayNode = objectMapper.readTree(fieldsprop);
+			
+			JsonNode arrayNodeFilter = objectMapper.readTree(filterprop);
+			
+			String updatedatatypeQuery = "";
+
+			Statement statement = conpg.createStatement();
+			
+			String uuid= "con"+UUID.randomUUID().toString().split("-")[0]; //Generates random UUID  
+						
+			tablename = "PT84430568S";
+			
+			System.out.println("chart_id:::::"+chart_id);
+			
+			if (chart_id ==0) 
+			{
+				
+						
+			
+			ResultSet rs = null;
+			
+			
+			String sqlselecfromfile = "select version from slices where upper(slice_name) like '"+chartNametxt.trim()+"_V%' or upper(slice_name) like '"+chartNametxt.trim()+"'"+" order by version desc limit 1";
+			System.out.println("sqlselecfromfile--"+sqlselecfromfile);
+			try {
+				ps = conpg.prepareStatement(sqlselecfromfile);
+				rs = ps.executeQuery();		
+			while (rs.next())  
+			{
+				versionDb = rs.getInt(1);
+			}
+			
+			ps.close();
+			rs.close();
+			
+			System.out.println("version :: "+versionDb);
+			}catch (Exception e) {   
+				versionDb = -1;
+				System.out.println(e.getMessage());
+				// TODO: handle exception
+			}
+			
+		
+			if (versionDb >= 0) {
+				versionDb = versionDb + 1;
+				slicename = chartNametxt.trim() + "_V" + versionDb;
+			} else {
+				versionDb = 0;
+				slicename = chartNametxt.trim();// + "_V"+versionDb;
+			}
+			
+			System.out.println("slicename:::::"+slicename);
+			
+			
+			
+			updatedatatypeQuery = "INSERT INTO public.slices(" + 
+					"	slice_name, datasource_type, datasource_name, viz_type,"
+					+ " query_context,containerid,filter_context,version)" + 
+					"	VALUES ('"+slicename+"', 'table', '"+tablename+"', '"+chart_type+ "','" +  arrayNode + "',"
+							+ "'"+ uuid +"','"+arrayNodeFilter+"',"+versionDb+") RETURNING id";
+
+			System.out.println("updatedatatypeQuery::::"+updatedatatypeQuery);
+			
+			//PreparedStatement ps = null;
+			ps = conpg.prepareStatement(updatedatatypeQuery);
+			if (ps.execute()) 
+			{
+				ResultSet rsEXEC = ps.getResultSet();
+				rsEXEC.next();
+				sliceid = rsEXEC.getInt(1);
+			} else 
+			{
+				sliceid = ps.getUpdateCount();
+			}
+		   
+			System.out.println("slice_id::::"+sliceid);
+			ps.close();
+			msg= 1;
+			//statement.execute(updatedatatypeQuery);
+		   //statement.close();	
+			
+			
+			
+			}
+			else 
+			{
+				//slice update
+				
+				updatedatatypeQuery = "update slices  "
+						+ "set "
+						+ "slice_name='"+slicename+"',"
+						+ " datasource_name='"+tablename+"',"
+						+ "viz_type = '"+chart_type+ "',query_context = '" +  arrayNode + "',"
+						+ "filter_context='"+arrayNodeFilter+"' where id="+chart_id;
+
+				
+				
+				//PreparedStatement ps = null;
+				ps = conpg.prepareStatement(updatedatatypeQuery);
+				ps.execute();
+			    ps.close();
+				msg =1;
+				
+			}
+			
+			
+			System.out.println("dashboardid::::"+dashboardid);
+			System.out.println("msg:::::"+msg);
+			if (dashboardid !=0) 
+		   {
+				int sliceid_=0;
+				updatedatatypeQuery = "INSERT INTO public.slices(" + 
+						"	slice_name, datasource_type, datasource_name, viz_type,"
+						+ " query_context,containerid,filter_context,version,isoriginal)" + 
+						"	VALUES ('"+slicename+"', 'table', '"+tablename+"', '"+chart_type+ "','" +  arrayNode + "',"
+								+ "'"+ uuid +"','"+arrayNodeFilter+"',"+versionDb+",0) RETURNING id";
+
+				
+				
+				//PreparedStatement ps = null;
+				ps = conpg.prepareStatement(updatedatatypeQuery);
+				if (ps.execute()) 
+				{
+					ResultSet rsEXEC = ps.getResultSet();
+					rsEXEC.next();
+					sliceid_ = rsEXEC.getInt(1);
+				} else 
+				{
+					sliceid_ = ps.getUpdateCount();
+				}
+			   
+				//statement.execute(updatedatatypeQuery);
+			   //statement.close();	
+				
+				
+				
+				
+				
+				
+				System.out.println("dashboardid::::"+dashboardid);
+			   System.out.println("sliceid:::::"+sliceid);
+			   System.out.println("tabid:::::"+tabid);
+			   System.out.println("tabname:::::"+tabname);
+			   newPos_json = addcharttoTab(String.valueOf(dashboardid),sliceid_,tabid,tabname);
+			   System.out.println("newPos_json::::"+newPos_json);
+			   
+			   msg =1; 
+			   
+		   }
+		   
+		   //msg =0;  
+		
+	try 
+		{   
+		if (!newPos_json.equalsIgnoreCase("")) 
+		{
+		    String updatedashposJson = " update dashboards set position_json='"+newPos_json+"' where id="+dashboardid+" "; 
+		
+		    System.out.println("updatedashposJson::::"+updatedashposJson);
+			statement.execute(updatedashposJson);
+			statement.close();	
+			msg =1;		
+		}
+		
+		}catch (Exception e) 
+		{
+			System.out.println("error update ::::"+e.toString());
+			msg = 0;
+			// TODO: handle exception
+		}
+		
+		
+		
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			System.out.println("error ::::"+e.toString());
+			e.printStackTrace();
+			
+			
+		    }
+		ChartEntity ch = new ChartEntity();
+		ch.setViz_type(String.valueOf(msg));
+		ch.setSlice_name(String.valueOf(sliceid));
+		List<ChartEntity> arr = new ArrayList<ChartEntity>();
+		arr.add(ch);
+		return new ResponseEntity<List>(arr,HttpStatus.OK);	
+		//return new ResponseEntity<String>(String.valueOf(msg)+"#_#"+sliceid,HttpStatus.OK);	
+	}
+	
+	
+	
+	
+	@RequestMapping(value = "/updatechart", method = RequestMethod.POST)
+	@ResponseBody
+	public HttpStatus updatechart(@RequestParam String chartName, String fieldsprop,
+			String charttype, String filterprop,
+			String tablename,
+			int dashboardid,String tabname,String tabid,String chartNametxt,int slice_id
+			) throws JsonMappingException, JsonProcessingException {
+		//System.out.println("btn save pressed");
+		String sqlQuery = "";
+		try {
+			JsonFactory jsonFactory = new JsonFactory();
+			ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
+
+			JsonNode arrayNode = objectMapper.readTree(fieldsprop);
+			
+			JsonNode arrayNodeFilter = objectMapper.readTree(filterprop);
+			
+			String updatedatatypeQuery = "";
+
+			Statement statement = conpg.createStatement();
+			
+			String uuid= "con"+UUID.randomUUID().toString().split("-")[0]; //Generates random UUID  
+						
+			tablename = "PT84430568S";
+			
+			
+			String chart_type = chartType(charttype);
+			
+			
+			/*
+			 * updatedatatypeQuery = "INSERT INTO public.slices(" +
+			 * "	slice_name, datasource_type, datasource_name, viz_type, query_context,containerid,filter_context)"
+			 * + "	VALUES ('"+chartNametxt+"', 'table', '"+tablename+"', '"+chart_type+
+			 * "','" + arrayNode + "'," + "'"+ uuid
+			 * +"','"+arrayNodeFilter+"') RETURNING id";
+			 */
+
+			
+			updatedatatypeQuery = "update slices set slice_name='"+chartNametxt+"'  , "
+					+ "datasource_type='table', datasource_name='"+tablename+"',"
+					+ " viz_type='"+chart_type+"', query_context='"+arrayNode+"',"
+					+ "filter_context='"+arrayNodeFilter+"' where id="+slice_id;
+			
+			
+			
+			int sliceid= 0;
+			PreparedStatement ps = null;
+			ps = conpg.prepareStatement(updatedatatypeQuery);
+			if (ps.execute()) 
+			{
+				ResultSet rsEXEC = ps.getResultSet();
+				rsEXEC.next();
+				//sliceid = rsEXEC.getInt(1);
+			} else 
+			{
+				//sliceid = ps.getUpdateCount();
+			}
+		   
+			//statement.execute(updatedatatypeQuery);
+		   //statement.close();	
+		
+			String newPos_json ="";
+		
+			if (dashboardid !=0) 
+		   {
+				
+				System.out.println("dashboardid::::"+dashboardid);
+			   System.out.println("sliceid:::::"+sliceid);
+			   System.out.println("tabid:::::"+tabid);
+			   System.out.println("tabname:::::"+tabname);
+			   newPos_json = addcharttoTab(String.valueOf(dashboardid),sliceid,tabid,tabname);
+		   }
+		   
+		  int msg =0;  
+		try {   
+		if (!newPos_json.equalsIgnoreCase("")) 
+		{
+		    String updatedashposJson = " update dashboards set position_json='"+newPos_json+"' where id="+dashboardid+" "; 
+		
+			statement.execute(updatedashposJson);
+			statement.close();	
+			msg =1;		
+		}
+		
+		}catch (Exception e) 
+		{
+			msg = 0;
+			// TODO: handle exception
+		}
+		
+		
+		
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		    }
+		
+		
+		
+		return HttpStatus.OK;
+	}
+	
+	
+	
+	@RequestMapping(value = "/savedashboard", method = RequestMethod.POST)
+	@ResponseBody
+	public HttpStatus savedashboard(@RequestParam int dashid,String jsondata,String dashName
+			) throws JsonMappingException, JsonProcessingException {
+		//System.out.println("btn save pressed");
+		String sqlQuery = "";
+		try {
+
+			
+			System.out.println("jsondata:::::::"+jsondata);
+						
+			Map<String,String> json_pos_map = new HashMap<String,String>(); 
+			
+
+			JsonFactory jsonFactory = new JsonFactory();
+			ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
+
+				JsonNode arrayNode = objectMapper.readTree(jsondata);
+				
+				if (arrayNode.isArray()) 
+				{
+				
+					for (JsonNode jsonNode : arrayNode) 
+				{
+					String tabid=jsonNode.get("tabid").asText();
+					String tabname=jsonNode.get("tabname").asText();
+					
+					if (json_pos_map.containsKey(tabid+"#_#"+tabname))
+					{
+						
+						String storevalue = json_pos_map.get(tabid+"#_#"+tabname);
+						
+						json_pos_map.replace(tabid+"#_#"+tabname, storevalue+","+jsonNode);
+					}
+					else 
+					{
+						json_pos_map.put(tabid+"#_#"+tabname, jsonNode.toString());
+					}
+					
+					}
+				}
+
+		
+				String final_json_pos_data ="";
+				int count =0;
+				for (Map.Entry<String, String> entry : json_pos_map.entrySet()) 
+				{
+					System.out.println("Key input :::::: " + entry.getKey() + " Value : " + entry.getValue());
+					
+					
+					String tabid = entry.getKey().toString().split("#_#")[0];
+					String tabname =entry.getKey().toString().split("#_#")[1];		
+					
+					String tempstr = "{\"tabid\":\""+tabid+"\",\"tabname\":\""+tabname+"\",\"childs\":["+entry.getValue() +"]}";
+					if (count ==0) 
+					{
+						final_json_pos_data += tempstr;
+					}
+					else 
+					{
+						final_json_pos_data +=","+ tempstr;
+
+					}
+				
+					count++;
+					
+				}			
+				
+				
+				final_json_pos_data = "["+final_json_pos_data+"]";
+				
+			System.out.println("final_json_pos_data:::::::::::::"+final_json_pos_data);	
+			
+			
+			/*
+			 * updatedatatypeQuery = "INSERT INTO public.slices(" +
+			 * "	slice_name, datasource_type, datasource_name, viz_type, query_context,containerid,filter_context)"
+			 * + "	VALUES ('"+chartNametxt+"', 'table', '"+tablename+"', '"+chart_type+
+			 * "','" + arrayNode + "'," + "'"+ uuid
+			 * +"','"+arrayNodeFilter+"') RETURNING id";
+			 * 
+			 * 
+			 * int sliceid= 0; PreparedStatement ps = null; ps =
+			 * conpg.prepareStatement(updatedatatypeQuery); if (ps.execute()) { ResultSet
+			 * rsEXEC = ps.getResultSet(); rsEXEC.next(); sliceid = rsEXEC.getInt(1); } else
+			 * { sliceid = ps.getUpdateCount(); }
+			 */		   
+			
+			//statement.execute(updatedatatypeQuery);
+		   //statement.close();	
+		
+			String newPos_json ="";
+			
+			Statement statement = conpg.createStatement();
+			
+			  int msg =0; 
+			  try 
+			  { 
+				  
+			 if (!newPos_json.equalsIgnoreCase("")) 
+			  { 
+			
+				 String   updatedashposJson  ="";
+				 
+				 if (dashid ==0) 
+				 {
+					 //insert 
+					 updatedashposJson =  "INSERT INTO public.dashboards(dashboard_title, position_json, tabscount)"
+					 		+ "VALUES ('"+dashName+"', '"+final_json_pos_data+"', "+(count+1)+")";
+					 		
+				 }
+				 else 
+				 {
+				      updatedashposJson =  " update dashboards set position_json='"+newPos_json+"' where id=" +dashid+" ";
+				 }
+			  
+			  statement.execute(updatedashposJson); 
+			  statement.close(); msg =1; 
+			  
+			  }
+			  
+			  }catch (Exception e) 
+			  { 
+				  msg = 0; // TODO: handle exception
+			  }
+			 
+		
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		    }
+		
+		
+		
+		return HttpStatus.OK;
+	}
+	
+	
+	@RequestMapping(value = "/getdashboardcharts", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<?> getdashboardcharts(@RequestParam String dashid) {
+
+		return new ResponseEntity<List>(getDashCharts("1"),HttpStatus.OK);
+	}
+	
+	
+	
+	
+	public String setDuplicateSlice (String dashid) {
+		PreparedStatement ps = null;
+		String filequery = " select id, slice_name, datasource_type, datasource_name, viz_type, query_context, containerid,filter_context from slices limit 100 ";
+		List<ChartEntity> list = new ArrayList<ChartEntity>();
+		
+		
+		int newsliceid = 0; 
+	    int id=0;    
+	    String slice_name="";
+	    String datasource_type="";
+	    String  datasource_name="";
+	    String viz_type="";
+	    String query_context="";
+	    String containerid="";
+	    String filter_context="";
+		
+		String uuid= "conea2a4e28";//"con"+UUID.randomUUID().toString().split("-")[0]; //Generates random UUID  
+	    
+		try {
+			ps = conpg.prepareStatement(filequery);
+		    ResultSet rs = ps.executeQuery();
+		
+			while (rs.next()) 
+			{
+				id = rs.getInt(1);
+				slice_name = rs.getString(2);
+				datasource_type = rs.getString(3);
+				datasource_name = rs.getString(4);
+				viz_type = rs.getString(5);
+				query_context = rs.getString(6);
+				
+				containerid = rs.getString(7);
+				filter_context= rs.getString(8);
+				
+				ChartEntity ls = new ChartEntity();
+				ls.setId(id);
+				ls.setSlice_name(slice_name);
+				ls.setDatasource_type(datasource_type);
+				ls.setDatasource_name(datasource_name);
+				ls.setViz_type(viz_type);
+				ls.setQuery_context(query_context);
+				ls.setContainerid(uuid);				
+				ls.setFilter_context(filter_context);
+				list.add(ls);
+			}
+			
+			
+			
+			Statement statement = conpg.createStatement();
+			
+			//String uuid= "con"+UUID.randomUUID().toString().split("-")[0]; //Generates random UUID  
+						
+			String updatedatatypeQuery = "INSERT INTO public.slices(" + 
+					"	slice_name, datasource_type, datasource_name, viz_type, query_context,containerid,filter_context,isoriginal)" + 
+					"	VALUES ('"+slice_name+"', '"+datasource_type+"', '"+datasource_name+"', '"+viz_type+ "',"
+					+ "'" +  query_context + "','"+ uuid +"','"+filter_context+"',0)  RETURNING id ";
+
+			PreparedStatement ps_ = null;
+			ps = conpg.prepareStatement(updatedatatypeQuery);
+			if (ps.execute()) 
+			{
+				ResultSet rsEXEC = ps.getResultSet();
+				rsEXEC.next();
+				newsliceid = rsEXEC.getInt(1);
+			} else 
+			{
+				newsliceid = ps.getUpdateCount();
+			}
+		//statement.execute(updatedatatypeQuery);
+		//statement.close();	
+			
+			
+		} catch (SQLException e) 
+		{
+			newsliceid = 0;
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+				
+		return newsliceid+"#_#"+uuid;
+	}
+	
+	
+	
+
+	public List<ChartEntity> setDuplicateChart (String dashid) {
+		PreparedStatement ps = null;
+		
+		String filequery = "SELECT id, chartdiv, charttype, columndim, dashboardid, fileid, periodicity,"
+							+ " title, titlediv FROM public.charts" ;  //by chartid="+dashid+" 
+		
+		List<ChartEntity> list = new ArrayList<ChartEntity>();
+		
+		
+		
+	    int id=0;    
+	    String chartdiv="";
+	    String charttype="";
+	    String  columndim="";
+	    String dashboardid="";
+	    String fileid="";
+	    String periodicity="";
+	    String title="";
+	    String titlediv="";
+		
+		try {
+			ps = conpg.prepareStatement(filequery);
+		    ResultSet rs = ps.executeQuery();
+		
+			while (rs.next()) 
+			{
+				id = rs.getInt(1);
+				chartdiv = rs.getString(2);
+				charttype = rs.getString(3);
+				columndim = rs.getString(4);
+				dashboardid = rs.getString(5);
+				fileid = rs.getString(6);
+				
+				periodicity = rs.getString(7);
+				title= rs.getString(8);
+				titlediv= rs.getString(9);
+						
+						
+				ChartEntity ls = new ChartEntity();
+				ls.setId(id);
+				ls.setSlice_name(chartdiv);
+				ls.setDatasource_type(charttype);
+				ls.setDatasource_name(columndim);
+				ls.setViz_type(dashboardid);
+				ls.setQuery_context(fileid);
+				ls.setContainerid(periodicity);				
+				ls.setFilter_context(titlediv);
+				//ls.settitlediv(titlediv);
+				list.add(ls);
+			}
+			
+			
+			
+			Statement statement = conpg.createStatement();
+			
+			//String uuid= "con"+UUID.randomUUID().toString().split("-")[0]; //Generates random UUID  
+						
+			String updateChartQuery ="INSERT INTO public.charts( chartdiv, charttype, columndim, dashboardid,"
+					+ " fileid, periodicity, title, titlediv) "
+					+ "VALUES "
+					+ "('"+chartdiv+"','"+charttype+"','"+columndim+"','"+dashboardid+"',"
+					+ "'"+fileid+"','"+periodicity+"','"+title+"','"+titlediv+"')";
+			
+			statement.execute(updateChartQuery);
+		    statement.close();	
+			
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+				
+		return list;
+	}
+	
+	
+	
+	
+	
+	public List<ChartEntity> getDashCharts(String dashid) {
+		PreparedStatement ps = null;
+		String filequery = " select id, slice_name, datasource_type, datasource_name, viz_type,"
+				+ " query_context, containerid,filter_context,isoriginal from slices limit 100 ";
+		List<ChartEntity> list = new ArrayList<ChartEntity>();
+		
+		try {
+			ps = conpg.prepareStatement(filequery);
+		    ResultSet rs = ps.executeQuery();
+		    int id=0;    
+		    String slice_name;
+		    String datasource_type;
+		    String  datasource_name;
+		    String viz_type;
+		    String query_context;
+		    String containerid;
+		    String filter_context;
+		    int isoriginal;
+			while (rs.next()) 
+			{
+				id = rs.getInt(1);
+				slice_name = rs.getString(2);
+				datasource_type = rs.getString(3);
+				datasource_name = rs.getString(4);
+				viz_type = rs.getString(5);
+				query_context = rs.getString(6);
+				
+				containerid = rs.getString(7);
+				filter_context= rs.getString(8);
+				isoriginal = rs.getInt(9);
+				
+				ChartEntity ls = new ChartEntity();
+				ls.setId(id);
+				ls.setSlice_name(slice_name);
+				ls.setDatasource_type(datasource_type);
+				ls.setDatasource_name(datasource_name);
+				ls.setViz_type(viz_type);
+				ls.setQuery_context(query_context);
+				ls.setContainerid(containerid);				
+				ls.setFilter_context(filter_context);
+				ls.setIsoriginal(isoriginal);
+				list.add(ls);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+				
+		return list;
+	}
+	
+	
+	
+	public List<ChartEntity> getDashChartsbyid(int chartid) {
+		PreparedStatement ps = null;
+		String filequery = " select id, slice_name, datasource_type, datasource_name,"
+				+ " viz_type, query_context, containerid,filter_context,isoriginal"
+				+ " from slices where id="+chartid+" ";
+		List<ChartEntity> list = new ArrayList<ChartEntity>();
+		
+		try {
+			ps = conpg.prepareStatement(filequery);
+		    ResultSet rs = ps.executeQuery();
+		    int id=0;    
+		    String slice_name;
+		    String datasource_type;
+		    String  datasource_name;
+		    String viz_type;
+		    String query_context;
+		    String containerid;
+		    String filter_context;
+		    int isoriginal=0;
+			while (rs.next()) 
+			{
+				id = rs.getInt(1);
+				slice_name = rs.getString(2);
+				datasource_type = rs.getString(3);
+				datasource_name = rs.getString(4);
+				viz_type = rs.getString(5);
+				query_context = rs.getString(6);
+				
+				containerid = rs.getString(7);
+				filter_context= rs.getString(8);
+				isoriginal = rs.getInt(9);
+				
+				
+				ChartEntity ls = new ChartEntity();
+				ls.setId(id);
+				ls.setSlice_name(slice_name);
+				ls.setDatasource_type(datasource_type);
+				ls.setDatasource_name(datasource_name);
+				ls.setViz_type(viz_type);
+				ls.setQuery_context(query_context);
+				ls.setContainerid(containerid);				
+				ls.setFilter_context(filter_context);
+				ls.setIsoriginal(isoriginal);
+				list.add(ls);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+				
+		return list;
+	}
+
+	
+	/*
+	 * @RequestMapping("/dashboard") public ModelAndView
+	 * displayDash(HttpServletRequest request) { ModelAndView modelview = new
+	 * ModelAndView(); modelview.setViewName("/dashboard"); return modelview; }
+	 */
+	
+	
+	/**
+	 * 
+	 * @param chartName
+	 * @return
+	 * @throws IOException
+	 * @throws JsonParseException
+	 */
+	/*
+	 * @RequestMapping(value = "/getchart", method = RequestMethod.POST) public void
+	 * getChart1(@RequestParam String chartName, String filedsprop,String charttype)
+	 * {
+	 * 
+	 * PreparedStatement ps = null;
+	 * 
+	 * try { ps = con.prepareStatement("select id,name from cafebot.PT100583461S");
+	 * ResultSet rs = ps.executeQuery();
+	 * 
+	 * while (rs.next()) { // byte[] data = rs.getString(2).getBytes("EUC-KR"); //
+	 * String value = new String(data, StandardCharsets.UTF_16); //
+	 * System.out.println(new String(rs.getBytes(2), "EUC-KR"));
+	 * System.out.println(rs.getString(2) + "\n");
+	 * 
+	 * // new String(string.getBytes("EUC-KR"), "ascii")
+	 * 
+	 * // System.out.print(value + "\n"); } rs.close(); ps.close(); } catch
+	 * (Exception e) { // TODO Auto-generated catch block e.printStackTrace(); }
+	 * 
+	 * 
+	 * }
+	 */
+	
+	@RequestMapping(value = "/getchart", method = RequestMethod.POST)
+	public ModelAndView getChart(@RequestParam String chartName, String fieldsprop,
+			String charttype,String filterprop,String tabelname) {
+
+		String sqlQuery = "";
+		SQLPojo sql = new SQLPojo();
+		System.out.println("fieldsprop:::::"+fieldsprop);
+		System.out.println("filterprop"+filterprop);
+		//'Types' : types,
+		//'Field' : field,
+		//'filterselect1' : $(filterselect1).val(),
+		//'filterselect2' : $(filterselect2).val(),
+		//'filterselectvalue1': $(filterselectvalue1).val(),
+		//'filterselectvalue2': $(filterselectvalue2).val()
+		int istack =0; 
+		String columnlist = "";
+		int isbin = 0;
+		try {
+			JsonFactory jsonFactory = new JsonFactory();
+			ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
+
+			JsonNode arrayNode = objectMapper.readTree(fieldsprop);
+
+			JsonNode arrayNodeFilter = objectMapper.readTree(filterprop);
+			
+			// select
+			// col
+			// aggreation col
+			// table
+			// group by
+			// ["Arcs","Agent_No","Sum"]
+			// ["Series","Age",""]
+
+			//[{"Types":"number","Field":"campaign","filterselect1":"is less than","filterselect2":"is less than","filterselectvalue1":"","filterselectvalue2":""}],[{"Types":"text","Field":"marital","filterselect1":"contains","filterselect2":"contains","filterselectvalue1":"","filterselectvalue2":""}]
+			if (arrayNodeFilter.isArray()) {
+				sql.setWhere(arrayNodeFilter);
+				/*
+				 * for (JsonNode jsonNode : arrayNodeFilter) { ObjectMapper nodeMapper = new
+				 * ObjectMapper(); JsonNode jNode =
+				 * nodeMapper.readTree(jsonNode.toString().replace("[", "").replace("]", ""));
+				 * String Types = jNode.get("Types").asText(); String Field =
+				 * jNode.get("Field").asText(); String filterselect1 =
+				 * jNode.get("filterselect1").asText(); String filterselect2 =
+				 * jNode.get("filterselect2").asText(); String filterselectvalue1 =
+				 * jNode.get("filterselectvalue1").asText(); String filterselectvalue2 =
+				 * jNode.get("filterselectvalue2").asText(); System.out.println( Types + ":" +
+				 * Field + ":" + filterselect1 + ":" + filterselect2 + ":" +
+				 * filterselectvalue2); }
+				 */
+			}
+			
+			System.out.println("tabelname::::::::::"+tabelname);
+			System.out.println("charttype::::::::::"+charttype);
+			
+			
+			
+			
+			
+
+			// FOR PIE
+			if (arrayNode.isArray()) {
+				
+				//sql.setTable(tabelname);
+				sql.setTable("PT84430568S");
+				//sql.setTable("PT100057220S");
+				
+				String querycharttype ="";
+			
+				
+				
+				int count=0;
+				for (JsonNode jsonNode : arrayNode) 
+				{
+					//System.out.println("arrayNode"+arrayNode);
+					ObjectMapper nodeMapper = new ObjectMapper();
+					JsonNode jNode = nodeMapper.readTree(jsonNode.toString().replace("[", "").replace("]", ""));
+
+					//System.out.print(jsonNode.toString() + "\n charttype " +charttype );
+
+					String seriesFieldNode = jNode.get("Series").asText();
+
+					String fieldFieldNode = jNode.get("Field").asText();
+
+					String aggFieldNode = jNode.get("Agg").asText();
+					
+					int displaytopCheck = Integer.parseInt(jNode.get("displaytopCheck").asText());
+					String displaytopvalueNode = jNode.get("displaytopvalue").asText();
+					String othersNode = jNode.get("others").asText();
+					
+					System.out.println("aggFieldNode::::"+aggFieldNode);
+					System.out.println("displaytopvalueNode::::"+displaytopvalueNode);
+					System.out.println("othersNode::::"+othersNode);
+					
+					int binFieldNode = Integer.parseInt(jNode.get("Bin").asText());
+					String binTypeNode = jNode.get("BinType").asText();
+					String binSizeNode = jNode.get("BinSize").asText();
+					String binCountNode =jNode.get("BinCount").asText();
+								
+					System.out.println("binFieldNode::::::"+binFieldNode);
+					
+					if (binFieldNode ==1) 
+					{
+						isbin++;
+					}
+					
+					System.out.println("binFieldNode:::: "+binFieldNode);
+					System.out.println("binTypeNode:::: "+binTypeNode);
+					System.out.println("binSizeNode:::: "+binSizeNode);
+					System.out.println("binCountNode::::"+binCountNode);
+					
+					//System.out.print(seriesFieldNode + "-" + fieldFieldNode + "-" + aggFieldNode);
+					
+					
+
+					
+					//PIE 
+					if (charttype.equals("chartcard1pie")) 
+					{
+						querycharttype ="pie";
+						pieSQL(sql, seriesFieldNode, fieldFieldNode, aggFieldNode);
+					}
+					else if (charttype.equals("chartcard1")) 
+					{
+									//bar chart
+									System.out.println("fieldFieldNode::::::::::::::::"+fieldFieldNode);
+							if (count==2) 
+							{		
+								if (fieldFieldNode.equalsIgnoreCase("") || fieldFieldNode.equalsIgnoreCase("[]")) 
+								{
+									istack =0;
+								}
+								else 
+								{
+									istack =1;
+								}
+							}
+									querycharttype ="histogram";
+									
+							
+									
+									barSQL(sql, seriesFieldNode, fieldFieldNode, aggFieldNode,
+											binFieldNode,binTypeNode,binSizeNode,binCountNode,displaytopvalueNode,othersNode,displaytopCheck);
+					}
+					else if (charttype.equals("chartcard2")) 
+					{
+						//bar chart
+									System.out.println("fieldFieldNode::::::::::::::::"+fieldFieldNode);
+							if (count==2) 
+							{		
+								if (fieldFieldNode.equalsIgnoreCase("") || fieldFieldNode.equalsIgnoreCase("[]")) 
+								{
+									istack =0;
+								}
+								else 
+								{
+									istack =1;
+								}
+							}
+									querycharttype ="bar";
+									barSQL(sql, seriesFieldNode, fieldFieldNode, aggFieldNode,
+											binFieldNode,binTypeNode,binSizeNode,binCountNode,displaytopvalueNode,othersNode,displaytopCheck);
+					}
+					else if (charttype.equals("chartcard3")) 
+					{
+						//bar chart
+									System.out.println("fieldFieldNode::::::::::::::::"+fieldFieldNode);
+							if (count==2) 
+							{		
+								if (fieldFieldNode.equalsIgnoreCase("") || fieldFieldNode.equalsIgnoreCase("[]")) 
+								{
+									istack =0;
+								}
+								else 
+								{
+									istack =1;
+								}
+							}
+									querycharttype ="stackedbar";
+									barSQL(sql, seriesFieldNode, fieldFieldNode, aggFieldNode,
+											binFieldNode,binTypeNode,binSizeNode,binCountNode,displaytopvalueNode,othersNode,displaytopCheck);;
+					}
+					
+					else if (charttype.equals("chartcard4")) 
+					{
+						//bar chart
+									System.out.println("fieldFieldNode::::::::::::::::"+fieldFieldNode);
+							if (count==2) 
+							{		
+								if (fieldFieldNode.equalsIgnoreCase("") || fieldFieldNode.equalsIgnoreCase("[]")) 
+								{
+									istack =0;
+								}
+								else 
+								{
+									istack =1;
+								}
+							}
+									querycharttype ="Area";
+									barSQL(sql, seriesFieldNode, fieldFieldNode, aggFieldNode,
+											binFieldNode,binTypeNode,binSizeNode,binCountNode,displaytopvalueNode,othersNode,displaytopCheck);
+					}
+					//LINES
+					else if (charttype.equals("chartcard5")) 
+					{
+						querycharttype ="line";
+						lineSQL(sql, seriesFieldNode, fieldFieldNode, aggFieldNode);
+					}
+
+					
+					
+//			            if("RefNo".equals(nameFieldNode)){
+//			                     ((ObjectNode)jsonNode).put("name", "1112");
+//			              }
+//			        	
+					// jsonNode.
+					// String nameFieldNode = jsonNode.get("name").asText();
+					// if("RefNo".equals(nameFieldNode)){
+					// ((ObjectNode)jsonNode).put("name", "1112");
+				
+					count++;
+				}
+				
+				System.out.println("isbin count ::::::"+isbin);
+				if (isbin >0) 
+				{
+					isbin =1;
+				}
+				
+				
+				sqlQuery = sql.getQuery(querycharttype,tabelname);
+				
+				columnlist = sql.getAggColumnlist();  
+				
+				System.out.print("final sql::::" + sqlQuery);
+				/*
+				 * sql.getTable() + sql.getFields() + sql.getAgg().replaceAll(",$", " ") +
+				 * sql.getTable() + " GROUP BY " + sql.getGroup().replaceAll(",$", " ")
+				 */
+				// ); 
+			}
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.out.println("set istack:::"+istack);
+		if (istack >1) 
+		{
+			istack =1;
+		}
+		
+		
+		return new ModelAndView("chartplace", "model", buildChart(sqlQuery,charttype,"container1",istack,columnlist,isbin));
+		
+	}
+	
+	
+	@RequestMapping(value = "/setchart", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<?> setChart(@RequestParam int id) {
+		
+		
+		System.out.println("setchart call :::"+id);
+		PreparedStatement ps = null;
+		String filequery = " SELECT id, datasource_name, viz_type, query_context, containerid,"
+				+ " filter_context,isoriginal,slice_name FROM slices where id = " + id;
+		List<ChartEntity> arr = new ArrayList<ChartEntity>();
+		
+		System.out.println("filequery::::::"+filequery);
+		
+		int _id=0;
+		String _slice_name;
+		String _datasource_name;
+		String _viz_type;
+		String _query_context;
+		String _containerid;
+		String _filter_context;
+		int isoriginal =0;
+		
+		try {
+			ps = conpg.prepareStatement(filequery);
+		    ResultSet rs = ps.executeQuery();
+		    
+			while (rs.next()) 
+			{
+				_id = rs.getInt(1);
+				_datasource_name = rs.getString(2);
+				_viz_type = rs.getString(3);
+				_query_context = rs.getString(4);
+				_containerid = rs.getString(5);
+				_filter_context = rs.getString(6);
+				isoriginal = rs.getInt(7);
+				_slice_name = rs.getString(8);
+				
+				ChartEntity list = new ChartEntity();
+				list.setId(_id);
+				list.setDatasource_name(_datasource_name);
+				list.setViz_type(_viz_type);
+				list.setQuery_context(_query_context);
+				list.setContainerid(_containerid);
+				list.setFilter_context(_filter_context);
+				list.setIsoriginal(isoriginal);
+				list.setSlice_name(_slice_name);
+				arr.add(list);
+				//tabscount=rs.getInt(3);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}				
+//		return new ModelAndView("chartplace", "model", list);
+		return new ResponseEntity<List>(arr,HttpStatus.OK);	
+	}
+	
+	
+	
+	
+	@RequestMapping(value = "/getchartDash", method = RequestMethod.POST)
+	public ModelAndView getChartDash(@RequestParam String chartName, 
+			String fieldsprop, String charttype,String table,String containerID,String filterprop) {
+
+		SQLPojo sql = new SQLPojo();
+		String sqlQuery = "";
+		String columnlist = "";
+		int isbin = 0;
+		try {
+			JsonFactory jsonFactory = new JsonFactory();
+			ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
+			
+			System.out.println("chartName"+chartName);
+			System.out.println("charttype"+charttype);
+			System.out.println("table"+table);
+			System.out.println("containerID"+containerID);
+			
+			System.out.println("fieldsprop"+fieldsprop);
+			
+			//fieldsprop = fieldsprop.replace("\"[", "[").replaceAll("]\"", "]");
+			
+			System.out.println("fieldsprop"+fieldsprop);
+			
+			JsonNode arrayNode = objectMapper.readTree(fieldsprop);
+			
+			JsonNode arrayNodeFilter = objectMapper.readTree(filterprop);
+			
+			System.out.println("arrayNode"+arrayNode);
+			// select
+			// col   
+			// aggreation col
+			// table
+			// group by
+			// ["Arcs","Agent_No","Sum"]
+			// ["Series","Age",""]
+
+			// FOR PIE
+			if (arrayNode.isArray()) {
+				
+				sql.setTable(table + " ");
+
+				for (JsonNode jsonNode : arrayNode) {
+			//		System.out.println("arrayNode"+arrayNode);
+					ObjectMapper nodeMapper = new ObjectMapper();
+					JsonNode jNode = nodeMapper.readTree(jsonNode.toString().replace("[", "").replace("]", ""));
+
+					System.out.print(jsonNode.toString() + "\n charttype " +charttype );
+
+					String seriesFieldNode = jNode.get("Series").asText();
+
+					String fieldFieldNode = jNode.get("Field").asText();
+
+					String aggFieldNode = jNode.get("Agg").asText();
+
+					System.out.print(seriesFieldNode + "-" + fieldFieldNode + "-" + aggFieldNode);
+					
+					
+					System.out.println("charttype dash :::::::::::::::::::::::::"+charttype);
+					
+					//PIE  
+					if (charttype.equals("chartcard1")) {
+						pieSQL(sql, seriesFieldNode, fieldFieldNode, aggFieldNode);
+					}
+					//LINES
+					else if (charttype.equals("chartcard3")) {
+						lineSQL(sql, seriesFieldNode, fieldFieldNode, aggFieldNode);
+					}
+//			            if("RefNo".equals(nameFieldNode)){
+//			                     ((ObjectNode)jsonNode).put("name", "1112");
+//			              }
+//			        	
+					// jsonNode.
+					// String nameFieldNode = jsonNode.get("name").asText();
+					// if("RefNo".equals(nameFieldNode)){
+					// ((ObjectNode)jsonNode).put("name", "1112");
+				}
+				
+				sql.setWhere(arrayNodeFilter);
+				/*
+				 * sql.getTable() + sql.getFields() + sql.getAgg().replaceAll(",$", " ") +
+				 * sql.getTable() + " GROUP BY " + sql.getGroup().replaceAll(",$", " ")
+				 */
+				// );
+			}
+
+			sqlQuery = sql.getQuery("pie",table);
+			columnlist = sql.getAggColumnlist();  
+			System.out.print("sqlQuery ::::::"+sqlQuery );
+			
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+				
+		int istack = 0;
+		
+		return new ModelAndView("chartplace", "model", buildChart(sqlQuery,charttype,containerID,istack,columnlist,isbin));
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	@RequestMapping(value = "/getchartDashbyid", method = RequestMethod.POST)
+	public ModelAndView getchartDashbyid(@RequestParam String chartName, 
+			String fieldsprop, String charttype,String table,
+			String containerID,String filterprop,int chartid) 
+	{
+
+		SQLPojo sql = new SQLPojo();
+		String sqlQuery = "";
+		String newsliceid = "";
+		String containerid_new = "";
+		String columnlist = "";   
+		int isbin = 0;
+		
+		try {
+			JsonFactory jsonFactory = new JsonFactory();
+			ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
+			
+			System.out.println("chartName"+chartName);
+			System.out.println("charttype"+charttype);
+			System.out.println("table"+table);
+			System.out.println("containerID"+containerID);
+			
+			System.out.println("fieldsprop"+fieldsprop);
+			
+			//fieldsprop = fieldsprop.replace("\"[", "[").replaceAll("]\"", "]");
+			
+			System.out.println("fieldsprop"+fieldsprop);
+
+					
+			
+			List<ChartEntity> lschart = getDashChartsbyid(chartid);
+			
+			
+			String newchartid_uuid [] = setDuplicateSlice( String.valueOf(chartid)).split("#_#");
+			
+			
+			newsliceid = newchartid_uuid[0];
+			containerid_new = "conea2a4e28";//newchartid_uuid[1];
+			
+			
+			
+			JsonNode arrayNode = objectMapper.readTree(lschart.get(0).getQuery_context());
+			
+			JsonNode arrayNodeFilter = objectMapper.readTree(filterprop);
+			
+			System.out.println("arrayNode"+arrayNode);
+			// select
+			// col   
+			// aggreation col
+			// table
+			// group by
+			// ["Arcs","Agent_No","Sum"]
+			// ["Series","Age",""]
+
+			// FOR PIE
+			
+			String querycharttype ="";
+			
+			if (arrayNode.isArray()) {
+				
+				sql.setTable(table + " ");
+
+				for (JsonNode jsonNode : arrayNode) {
+			//		System.out.println("arrayNode"+arrayNode);
+					ObjectMapper nodeMapper = new ObjectMapper();
+					JsonNode jNode = nodeMapper.readTree(jsonNode.toString().replace("[", "").replace("]", ""));
+
+					System.out.print(jsonNode.toString() + "\n charttype " +charttype );
+
+					String seriesFieldNode = jNode.get("Series").asText();
+
+					String fieldFieldNode = jNode.get("Field").asText();
+
+					String aggFieldNode = jNode.get("Agg").asText();
+
+					System.out.print(seriesFieldNode + "-" + fieldFieldNode + "-" + aggFieldNode);
+					
+					
+					System.out.println("charttype dash :::::::::::::::::::::::::"+charttype);
+					
+					
+					//PIE  
+					if (charttype.equals("chartcard1")) {
+						querycharttype  = "pie";
+						pieSQL(sql, seriesFieldNode, fieldFieldNode, aggFieldNode);
+					}
+					else if (charttype.equals("chartcard2")) 
+					{
+						querycharttype  = "bar";
+						lineSQL(sql, seriesFieldNode, fieldFieldNode, aggFieldNode);
+					}
+					
+					//LINES
+					else if (charttype.equals("chartcard3")) {
+						
+						querycharttype  = "line";
+						lineSQL(sql, seriesFieldNode, fieldFieldNode, aggFieldNode);
+					}
+//			            if("RefNo".equals(nameFieldNode)){
+//			                     ((ObjectNode)jsonNode).put("name", "1112");
+//			              }
+//			        	
+					// jsonNode.
+					// String nameFieldNode = jsonNode.get("name").asText();
+					// if("RefNo".equals(nameFieldNode)){
+					// ((ObjectNode)jsonNode).put("name", "1112");
+				}
+				
+				sql.setWhere(arrayNodeFilter);
+				columnlist = sql.getAggColumnlist();  
+				/*
+				 * sql.getTable() + sql.getFields() + sql.getAgg().replaceAll(",$", " ") +
+				 * sql.getTable() + " GROUP BY " + sql.getGroup().replaceAll(",$", " ")
+				 */
+				// );
+			}
+			
+			sqlQuery = sql.getQuery(querycharttype,table);
+			
+			System.out.println("sqlQuery:::::"+sqlQuery);
+			//System.out.print(sql.getQuery(querycharttype));
+			
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		int istack =0;
+		
+		return new ModelAndView("chartplace", "model", buildChart(sqlQuery,charttype,containerid_new,istack,columnlist,isbin));
+		
+	}
+	
+	
+	
+	public Map<String, Object> buildChart(String chartQuery,String chartType,
+			String containerid,int istack ,String columnlist,int isbin) {
+	
+		
+		/*
+		 * int loop = 0; for(String variable: filedsprop) { System.out.print(loop + "--"
+		 * + variable); loop++; }
+		 */
+
+		Highchart hc = null;
+
+		/*
+		 * if (chartName.equals("line")) { hc = new HighchartsLine().configure(); } else
+		 * { hc = new HighchartsPie().configure(); }
+		 */
+
+		Map<String, Object> chartModel = new HashMap<String, Object>();
+
+		/*
+		 * if (chartName.equals("line")) { hc = new HighchartsLine().configure();
+		 * hc.setTheme(HighchartTheme.DARK_UNICA); //chartOptionsJs =
+		 * hc.chartOptionsToJs(); //chartModel.put("setChartSchema", chartSchemaLine());
+		 * } else //Pie
+		 */ 
+		
+		
+		System.out.println("build chart type ::::::"+chartType);
+		
+		if (chartType.equals("chartcardpie"))
+		{
+			hc = new HighchartsPie().configure(getSeriesData(chartQuery));
+			hc.setTheme(HighchartTheme.DARK_UNICA);
+		}
+		else if (chartType.equals("chartcard1")) 
+		{
+			hc = new HighchartsBarNStackBar().configureHistogram(getSeriesDataBar(chartQuery),"Histogram","",istack,columnlist);
+			hc.setTheme(HighchartTheme.DARK_UNICA);
+		}
+		
+		else if (chartType.equals("chartcard2"))
+		{
+			
+			hc = new HighchartsBarNStackBar().configure(getSeriesDataBar(chartQuery),"Bar Chart","",istack,columnlist,isbin);
+			hc.setTheme(HighchartTheme.DARK_UNICA);
+			
+		}
+		
+		else if (chartType.equals("chartcard3"))
+		{
+			hc = new HighchartsBarNStackBar().configureStack(getSeriesDataBar(chartQuery),"Stacked Bar Chart","",istack,columnlist);
+			hc.setTheme(HighchartTheme.DARK_UNICA);
+		}
+		else if (chartType.equals("chartcard5"))
+		{
+			hc = new HighchartsLine().configure(getSeriesDataLine(chartQuery),"Line Chart","Demo");
+			hc.setTheme(HighchartTheme.DARK_UNICA);
+		}
+		else if (chartType.equals("chartcard4"))
+		{
+			hc = new HighchartsBarNStackBar().configureArea(getSeriesDataBar(chartQuery),"Area Chart","",istack,columnlist);
+			hc.setTheme(HighchartTheme.DARK_UNICA);
+		}
+		
+		String globalOptions = hc.globalOptionsToJs();
+		String chartOptions = hc.chartOptionsToJs();
+
+		// chartModel.put("chartName", chartName);
+		chartModel.put("globalOptions", globalOptions);
+		chartModel.put("chartOptions", chartOptions);
+
+		chartModel.put("containerID", containerid);
+		
+		// chartModel.put("setChart", "true");
+		// chartModel.put("setTable", "true");
+		// chartModel.put("setChartType", "true");
+		// chartModel.put("setData", tableSchema());
+		// chartModel.put("setData_", getDataCSV());
+		return chartModel;
+		//return new ModelAndView("chartplace", "model", chartModel);
+	}
+
+	public ArrayList<Data> getSeriesData(String sqlQuery) {
+		ArrayList<Data> array = new ArrayList<Data>();
+
+		PreparedStatement ps = null;
+
+		try {
+			ps = con.prepareStatement(sqlQuery);
+			ResultSet rs = ps.executeQuery();
+ 
+			while (rs.next()) {
+//				     System.out.print(rs.getString(1));
+				array.add (new Data().setName(rs.getString(1)).setY(rs.getDouble(2)));
+			}
+			rs.close();
+			ps.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		/*
+		 * array.add(new
+		 * Data().setName("Chrome").setY(61.41).setSliced(true).setSelected(true));
+		 * array.add(new Data().setName("Internet Explorer").setY(11.84)); array.add(new
+		 * Data().setName("Firefox").setY(10.85)); array.add(new
+		 * Data().setName("Edge").setY(4.67)); array.add(new
+		 * Data().setName("Safari").setY(4.18)); array.add(new
+		 * Data().setName("Sogou Explorer").setY(1.64)); array.add(new
+		 * Data().setName("Opera").setY(1.6)); array.add(new
+		 * Data().setName("QQ").setY(1.2)); array.add(new
+		 * Data().setName("Other").setY(2.61));
+		 */
+
+		return array;
+	}
+	 
+	
+	public ArrayList<com.hyjavacharts.model.highcharts.series.seriesline.Data> getSeriesDataLine(String sqlQuery) {
+		
+		
+		sqlQuery = sqlQuery +" limit 100";
+		
+		System.out.println("sqlQuery:::::::::::"+sqlQuery);
+		
+		
+		
+		ArrayList<com.hyjavacharts.model.highcharts.series.seriesline.Data> array 
+		= new ArrayList<com.hyjavacharts.model.highcharts.series.seriesline.Data>();
+
+		PreparedStatement ps = null;
+
+		try {
+			ps = con.prepareStatement(sqlQuery);
+			ResultSet rs = ps.executeQuery();
+
+			int count =1;
+			
+			while (rs.next()) {
+				     //System.out.println("key:::"+rs.getString(1));
+				     //System.out.println("value:::"+rs.getString(2));
+				array.add(
+						new com.hyjavacharts.model.highcharts.series.seriesline.Data()
+						.setX(rs.getDouble(1))
+						.setY(rs.getDouble(2)));
+				//new Data().setX(1).setY(61.41)
+				
+				count++;
+			}
+			System.out.println("array:::::"+array.toString());
+			
+			
+			rs.close();
+			ps.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return array;
+	}
+
+	
+	
+	
+	public List<List<com.hyjavacharts.model.highcharts.series.seriesbar.Data>> getSeriesDataBar(String sqlQuery) 
+	{
+		
+		
+		
+		PreparedStatement ps = null;
+		///-------------------------binning------------------
+		
+		/*
+		 * int bintype =0; //0 bin size // 1 number of bin String colname=""; int
+		 * bin_size = 10; int totrowcount =0;
+		 * 
+		 * Map <Integer,String> binmap = new HashMap<Integer, String>(); Map
+		 * <Integer,String> binmap2 = new HashMap<Integer, String>();
+		 * //////----------bin size---------------------
+		 * 
+		 * 
+		 * String sqldistinctvalue =
+		 * "select distinct item_category_name from cafebot.PT84430568S order by item_category_name asc"
+		 * ; 
+		 * 
+		 * List<String> distinctvaluearray = new ArrayList<String>();
+		 * 
+		 * try { ps = con.prepareStatement(sqldistinctvalue); ResultSet rs =
+		 * ps.executeQuery(); ResultSetMetaData rsmd = rs.getMetaData();
+		 * 
+		 * 
+		 * while (rs.next()) { distinctvaluearray.add(rs.getString(1)); }
+		 * 
+		 * System.out.println("distinctvaluearray :::::"+distinctvaluearray);
+		 * 
+		 * 
+		 * rs.close(); ps.close();
+		 * 
+		 * } catch (SQLException e) { // TODO Auto-generated catch block
+		 * e.printStackTrace(); }
+		 * 
+		 * 
+		 * String totalcountQ = "select count() from cafebot.PT84430568S";
+		 * 
+		 * try { ps = con.prepareStatement(totalcountQ); ResultSet rs =
+		 * ps.executeQuery();
+		 * 
+		 * while (rs.next()) { totrowcount = rs.getInt(1); }
+		 * 
+		 * System.out.println("totrowcount :::::"+totrowcount); rs.close(); ps.close();
+		 * 
+		 * } catch (SQLException e) { // TODO Auto-generated catch block
+		 * e.printStackTrace(); }
+		 * 
+		 * 
+		 * //0 bin size if (bintype==0) {
+		 * 
+		 * int distinctvalue = 0; int bin_index =1; String disvalue=""; for (int
+		 * k=0;k<distinctvaluearray.size();k++) { if (distinctvalue != (bin_size-1)) {
+		 * if (distinctvalue ==0) { disvalue += "'"+ distinctvaluearray.get(k)+"'";
+		 * 
+		 * } else { disvalue += ",'"+ distinctvaluearray.get(k)+"'";
+		 * 
+		 * }
+		 * 
+		 * distinctvalue++;
+		 * 
+		 * } else { if (disvalue.endsWith(",")) { disvalue = disvalue.substring(0,
+		 * disvalue.length() -1); }
+		 * 
+		 * binmap.put(bin_index, disvalue); bin_index++; disvalue =""; distinctvalue=0;
+		 * }
+		 * 
+		 * binmap.put(bin_index, disvalue); }
+		 * 
+		 * if (distinctvalue >0 &&(distinctvalue < bin_size)) { binmap.put(bin_index,
+		 * disvalue); }
+		 * 
+		 * System.out.println("binmap::::"+binmap.toString());
+		 * 
+		 * //totrowcount = rs.getInt(1); }
+		 * 
+		 * if (bintype==0) { // 1 number of bin
+		 * 
+		 * System.out.println("totrowcount:::::"+totrowcount);
+		 * System.out.println("bin_size:::::"+bin_size);
+		 * 
+		 * 
+		 * int total_row_per_bin = totrowcount/bin_size;
+		 * 
+		 * System.out.println("total_row_per_bin::::::::::"+total_row_per_bin);
+		 * 
+		 * //int total_row_per_bin = total_no_of_bin * bin_size; int offset =0;
+		 * 
+		 * //totrowcount =0; int bin_index =1;
+		 * 
+		 * for (int k=0; k < bin_size;k++) //change to { String sqlcountperbin =
+		 * "select Sum(toFloat32OrZero( sum_item_cnt_day_)) as Sum_sum_item_cnt_day_ " +
+		 * "from cafebot.PT84430568S where 1=1 " + "and  item_category_name in " +
+		 * "(select item_category_name from cafebot.PT84430568S " +
+		 * "order by item_category_name asc limit "+offset+","+total_row_per_bin+") " +
+		 * "ORDER BY Sum(toFloat32OrZero( sum_item_cnt_day_)) as Sum_sum_item_cnt_day_ DESC limit 10"
+		 * ;
+		 * 
+		 * System.out.println("sqlcountperbin::::::"+sqlcountperbin); try { ps =
+		 * con.prepareStatement(sqlcountperbin); ResultSet rs = ps.executeQuery();
+		 * 
+		 * while (rs.next()) { totrowcount = rs.getInt(1); binmap2.put(bin_index,
+		 * String.valueOf(totrowcount) ); bin_index++; }
+		 * 
+		 * rs.close(); ps.close();
+		 * 
+		 * } catch (SQLException e) {
+		 * System.out.println("error noof bin ::::::"+e.toString()); // TODO
+		 * Auto-generated catch block e.printStackTrace(); }
+		 * 
+		 * 
+		 * offset = offset + total_row_per_bin; }
+		 * 
+		 * System.out.println("binmap2 :::::"+binmap2);
+		 * 
+		 * 
+		 * }
+		 */
+		
+		
+		/////////binning end ---------------------------
+		
+		
+		List<List<com.hyjavacharts.model.highcharts.series.seriesbar.Data>> lsmain = new ArrayList<List<com.hyjavacharts.model.highcharts.series.seriesbar.Data>>();
+		
+		String sql [] = sqlQuery.split("#_#");
+		
+		System.out.println("sql len::::"+sql);
+		
+		for (int k=0;k<sql.length;k++) 
+		{
+			sqlQuery = sql[k] +" limit 1000";
+			
+			System.out.println("sqlQuery:::::::::::"+sqlQuery);
+			         
+			ArrayList<com.hyjavacharts.model.highcharts.series.seriesbar.Data> array 
+			= new ArrayList<com.hyjavacharts.model.highcharts.series.seriesbar.Data>();
+
+			
+			try 
+			{
+				ps = con.prepareStatement(sqlQuery);
+				ResultSet rs = ps.executeQuery();
+				ResultSetMetaData rsmd = rs.getMetaData();
+				
+				int count =1;
+				
+				while (rs.next()) 
+				{
+					     //System.out.println("key:::"+rs.getString(1));
+					     //System.out.println("value:::"+rs.getString(2));
+				
+					array.add(new com.hyjavacharts.model.highcharts.series.seriesbar.Data().
+										setName(rs.getString(1)).
+										setY(rs.getDouble(2))	
+									);
+					
+					/*
+					 * array.add(new com.hyjavacharts.model.highcharts.series.seriesbar.Data().
+					 * setY(rs.getDouble(2)));
+					 */
+					
+					//new Data().setX(1).setY(61.41)
+					
+					count++;
+				}
+				
+				lsmain.add(array);
+				
+				System.out.println("array:::::"+array.toString());
+				
+				
+				rs.close();
+				ps.close();
+				
+			} catch (SQLException e) 
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+		}
+		
+		System.out.println("lsmain::::::"+lsmain.size());
+		//return array;
+		
+		return lsmain;
+		
+	}
+
+	
+	public List<Map <Integer,String>> getBinQuery(String tablename,int bintype,int bin_size) 
+	{
+		
+		tablename = "PT84430568S";
+		bintype =0; //0  bin size  // 1 number of bin
+		
+		bin_size = 10;
+		int totrowcount =0;
+		
+		SQLPojo sqlpojo =  new SQLPojo();
+		List<Map <Integer,String>> lsmap = new ArrayList<Map<Integer,String>>();
+		
+		Map <Integer,String> binmap = new HashMap<Integer, String>();
+		Map <Integer,String> binmap2 = new HashMap<Integer, String>();
+		//////----------bin size--------------------- 
+		
+		String colname = sqlpojo.getFields();
+		String sqldistinctvalue = "select distinct \""+colname+"\" from cafebot.PT84430568S order by \""+colname+"\" asc";
+		PreparedStatement ps = null;
+
+		List<String> distinctvaluearray = new ArrayList<String>();
+
+		try 
+		{
+			ps = con.prepareStatement(sqldistinctvalue);
+			ResultSet rs = ps.executeQuery();
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			
+			while (rs.next()) 
+			{
+				distinctvaluearray.add(rs.getString(1));
+			}
+			
+			System.out.println("distinctvaluearray :::::"+distinctvaluearray);
+			
+			
+			rs.close();
+			ps.close();
+			
+		} catch (SQLException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		String totalcountQ = "select count() from cafebot."+tablename;
+		
+		try 
+		{
+			ps = con.prepareStatement(totalcountQ);
+			ResultSet rs = ps.executeQuery();
+			
+			while (rs.next()) 
+			{
+				totrowcount = rs.getInt(1);
+			}
+			
+			System.out.println("totrowcount :::::"+totrowcount);
+			rs.close();
+			ps.close();
+			
+		} catch (SQLException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		//0  bin size  
+		if (bintype==0) 
+		{
+			
+			int distinctvalue = 0;
+			int bin_index =1;
+			String disvalue="";
+			for (int k=0;k<distinctvaluearray.size();k++) 
+			{
+				if (distinctvalue != (bin_size-1)) 
+				{
+					if (distinctvalue ==0) 
+					{
+						disvalue +=  "'"+ distinctvaluearray.get(k)+"'";
+	
+					}
+					else 
+					{
+						disvalue +=  ",'"+ distinctvaluearray.get(k)+"'";
+
+					}
+					
+					distinctvalue++;
+					
+				}
+				else 
+				{
+					if (disvalue.endsWith(",")) 
+					{
+						disvalue = disvalue.substring(0, disvalue.length() -1);
+					}
+					
+					binmap.put(bin_index, disvalue);
+					bin_index++;
+					disvalue ="";
+					distinctvalue=0;
+				}
+				
+				binmap.put(bin_index, disvalue);
+			}
+			
+			if (distinctvalue >0 &&(distinctvalue < bin_size)) 
+			{
+				binmap.put(bin_index, disvalue);
+			}
+			
+				System.out.println("binmap::::"+binmap.toString());		
+				
+				lsmap.add(binmap);
+				
+				
+				//------------------------
+				
+				 System.out.println("totrowcount:::::"+totrowcount);
+				 System.out.println("bin_size:::::"+bin_size);
+				 
+				 
+					int total_row_per_bin =  bin_size;
+					
+					
+					System.out.println("total_row_per_bin::::::::::"+total_row_per_bin);
+					
+					//int total_row_per_bin  = total_no_of_bin * bin_size;
+					int offset =0;
+					
+				
+					
+					String sql ="";
+				
+					
+			         String stragg [] = sqlpojo.getAgg().split(","); 
+					
+					System.out.println("len====="+stragg.length);
+					System.out.println("stragg__________"+stragg.toString());
+					
+					for(int k=0;k<stragg.length;k++) 
+					{
+						
+						sql += "SELECT "+
+								sqlpojo.getFields().trim() +
+								stragg[k].replaceAll(",$", " ") +
+								" FROM cafebot."+ 
+								sqlpojo.getTable() +     
+								" WHERE 1=1 " +
+								sqlpojo.getWhere();	
+						
+								if (sqlpojo.getIsAgg()) 
+								{
+									sql = sql + " GROUP BY " + sqlpojo.getFields().trim().replaceAll(",$", " ");
+								}
+								
+								if (sqlpojo.getIsAgg()) 
+								{
+									sql = sql + " ORDER BY " + stragg[k].trim().replaceAll(",$", " ") +" DESC";
+								}		
+						
+							if (stragg.length != (k+1) ) 
+							{
+								sql +="#_#";
+							}	
+			
+							System.out.println("sql###########"+sql);
+								
+						//------------------------------
+							
+							int totnopofbin = totrowcount/bin_size;
+							
+							for (int j=0; j < totnopofbin;j++) //change to 
+							{
+								String sqlcountperbin = "select "+stragg[k].replaceAll(",$", " ")+" "
+										+ "from cafebot."+tablename+" where 1=1 "
+										+ "and  item_category_name in "
+										+ "(select \""+colname+"\" from cafebot."+tablename+" "
+										+ " ORDER BY \""+colname+"\" asc limit "+offset+","+total_row_per_bin+") "
+										+ " ORDER BY "+stragg[k].replaceAll(",$", " ")+" DESC limit 10"; 
+							
+								System.out.println("sqlcountperbin::::::"+sqlcountperbin);
+								try 
+								{
+									ps = con.prepareStatement(sqlcountperbin);
+									ResultSet rs = ps.executeQuery();
+									
+									while (rs.next()) 
+									{
+										totrowcount = rs.getInt(1);
+										binmap2.put(bin_index, String.valueOf(totrowcount) );
+										bin_index++;
+									}
+									
+									rs.close();
+									ps.close();
+									
+								} catch (SQLException e) 
+								{
+									System.out.println("error noof bin ::::::"+e.toString());
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								
+								
+								offset = offset + total_row_per_bin;
+							}
+							
+							System.out.println("binmap2 :::::"+binmap2);
+							
+							lsmap.add(binmap2);
+							
+							//-----------------------
+					}
+					
+				
+				//-----------------------
+					
+			//totrowcount = rs.getInt(1);
+		}
+		
+	 if (bintype==0)
+		{
+			// 1 number of bin
+		 
+		 System.out.println("totrowcount:::::"+totrowcount);
+		 System.out.println("bin_size:::::"+bin_size);
+		 
+		 
+			int total_row_per_bin =  totrowcount/bin_size;
+			
+			System.out.println("total_row_per_bin::::::::::"+total_row_per_bin);
+			
+			//int total_row_per_bin  = total_no_of_bin * bin_size;
+			int offset =0;
+			
+			//totrowcount  =0;
+			int bin_index =1;
+			
+			String sql ="";
+		
+			
+	         String stragg [] = sqlpojo.getAgg().split(","); 
+			
+			System.out.println("len====="+stragg.length);
+			System.out.println("stragg__________"+stragg.toString());
+			
+			for(int k=0;k<stragg.length;k++) 
+			{
+				
+				sql += "SELECT "+
+						sqlpojo.getFields().trim() +
+						stragg[k].replaceAll(",$", " ") +
+						" FROM cafebot."+ 
+						sqlpojo.getTable() +     
+						" WHERE 1=1 " +
+						sqlpojo.getWhere();	
+				
+						if (sqlpojo.getIsAgg()) 
+						{
+							sql = sql + " GROUP BY " + sqlpojo.getFields().trim().replaceAll(",$", " ");
+						}
+						
+						if (sqlpojo.getIsAgg()) 
+						{
+							sql = sql + " ORDER BY " + stragg[k].trim().replaceAll(",$", " ") +" DESC";
+						}		
+				
+					if (stragg.length != (k+1) ) 
+					{
+						sql +="#_#";
+					}	
+	
+					System.out.println("sql###########"+sql);
+						
+				//------------------------------	
+					for (int j=0; j < bin_size;j++) //change to 
+					{
+						String sqlcountperbin = "select "+stragg[k].replaceAll(",$", " ")+" "
+								+ "from cafebot."+tablename+" where 1=1 "
+								+ "and  item_category_name in "
+								+ "(select \""+colname+"\" from cafebot."+tablename+" "
+								+ " ORDER BY \""+colname+"\" asc limit "+offset+","+total_row_per_bin+") "
+								+ " ORDER BY "+stragg[k].replaceAll(",$", " ")+" DESC limit 10"; 
+					
+						System.out.println("sqlcountperbin::::::"+sqlcountperbin);
+						try 
+						{
+							ps = con.prepareStatement(sqlcountperbin);
+							ResultSet rs = ps.executeQuery();
+							
+							while (rs.next()) 
+							{
+								totrowcount = rs.getInt(1);
+								binmap2.put(bin_index, String.valueOf(totrowcount) );
+								bin_index++;
+							}
+							
+							rs.close();
+							ps.close();
+							
+						} catch (SQLException e) 
+						{
+							System.out.println("error noof bin ::::::"+e.toString());
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+						
+						offset = offset + total_row_per_bin;
+					}
+					
+					System.out.println("binmap2 :::::"+binmap2);
+					
+					lsmap.add(binmap2);
+					
+					//-----------------------
+						
+			}
+			
+		}
+		
+		
+		/////////binning end ---------------------------
+		return lsmap;
+	}
+	
+	
+	
+	
+	public String returnBinQuery(String tablename,int bintype,int bin_size,String aggcol,String colname) 
+	{
+		
+		tablename = "PT84430568S";
+		bintype =0; //0  bin size  // 1 number of bin
+		
+		//bin_size = 10;
+		int totrowcount =0;
+		
+		
+		String sqlcountperbin = "";
+		
+		
+		//////----------bin size--------------------- 
+		
+		
+		colname = colname.replace(",", "");
+		
+		String sqldistinctvalue = "select distinct \""+colname+"\" from cafebot.PT84430568S order by \""+colname+"\" asc";
+		PreparedStatement ps = null;
+
+		List<String> distinctvaluearray = new ArrayList<String>();
+
+		try 
+		{
+			ps = con.prepareStatement(sqldistinctvalue);
+			ResultSet rs = ps.executeQuery();
+			ResultSetMetaData rsmd = rs.getMetaData();
+			
+			
+			while (rs.next()) 
+			{
+				distinctvaluearray.add(rs.getString(1));
+			}
+			
+			System.out.println("distinctvaluearray :::::"+distinctvaluearray);
+			
+			
+			rs.close();
+			ps.close();
+			
+		} catch (SQLException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		String totalcountQ = "select count() from cafebot."+tablename;
+		
+		try 
+		{
+			ps = con.prepareStatement(totalcountQ);
+			ResultSet rs = ps.executeQuery();
+			
+			while (rs.next()) 
+			{
+				totrowcount = rs.getInt(1);
+			}
+			
+			System.out.println("totrowcount :::::"+totrowcount);
+			rs.close();
+			ps.close();
+			
+		} catch (SQLException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		//0  bin size  
+		if (bintype==0) 
+		{
+			
+			int distinctvalue = 0;
+			int bin_index =1;
+			String disvalue="";
+			
+				//------------------------
+				
+				 System.out.println("totrowcount:::::"+totrowcount);
+				 System.out.println("bin_size:::::"+bin_size);
+					int total_row_per_bin =  bin_size;
+					System.out.println("total_row_per_bin::::::::::"+total_row_per_bin);
+					
+					//int total_row_per_bin  = total_no_of_bin * bin_size;
+					int offset =0;
+					String sql ="";
+					
+			      		int totnopofbin = totrowcount/bin_size;
+							
+							for (int j=0; j < totnopofbin;j++) //change to 
+							{
+								
+							if (j>0) 
+							{
+								sqlcountperbin += "#_#";
+							}	
+								
+						 sqlcountperbin += "select "+j+","+aggcol+" "
+										+ "from cafebot."+tablename+" where 1=1 "
+										+ "and  item_category_name in "
+										+ "(select \""+colname+"\" from cafebot."+tablename+" "
+										+ " ORDER BY \""+colname+"\" asc limit "+offset+","+total_row_per_bin+") "
+										+ " ORDER BY "+aggcol+" DESC "; 
+							
+								System.out.println("sqlcountperbin::::::"+sqlcountperbin);
+								offset = offset + total_row_per_bin;
+							}
+		}
+		
+	 if (bintype==1)
+		{
+			// 1 number of bin
+		 
+		 System.out.println("totrowcount:::::"+totrowcount);
+		 System.out.println("bin_size:::::"+bin_size);
+		 
+		 
+			int total_row_per_bin =  totrowcount/bin_size;
+			
+			System.out.println("total_row_per_bin::::::::::"+total_row_per_bin);
+			
+			//int total_row_per_bin  = total_no_of_bin * bin_size;
+			int offset =0;
+			
+			for (int j=0; j < bin_size;j++) //change to 
+					{
+						
+				if (j>0) 
+				{
+					sqlcountperbin += "#_#";
+				}	
+				
+				sqlcountperbin += "select "+j+", "+aggcol+" "
+								+ "from cafebot."+tablename+" where 1=1 "
+								+ "and  item_category_name in "
+								+ "(select \""+colname+"\" from cafebot."+tablename+" "
+								+ " ORDER BY \""+colname+"\" asc limit "+offset+","+total_row_per_bin+") "
+								+ " ORDER BY "+aggcol+" DESC "; 
+					
+						offset = offset + total_row_per_bin;
+					}
+					
+		}
+		
+		
+		/////////binning end ---------------------------
+		return sqlcountperbin;
+	}
+	
+	
+	
+	@RequestMapping(value = "/getChartDim", method = RequestMethod.POST)
+	public @ResponseBody String getChartDim(String type) {
+		
+		
+		System.out.println("type:::::"+type);
+		
+		if (type.equals("chartcardpie")) 
+		{
+			//return chartSchemaPie();
+			return chartSchemaLine();
+		}
+		else if (type.equals("chartcard1")) 
+		{
+			
+			return chartBars();
+		}
+		else if (type.equals("chartcard2")) 
+		{
+			return chartBarsSingle();
+		}
+		else if (type.equals("chartcard3")) 
+		{
+			return chartBars();
+		} 
+		else if (type.equals("chartcard5")) 
+		{
+			return chartSchemaLine();
+		} 
+		else if (type.equals("chartcard4")) 
+		{
+			return chartBars();
+		}
+		else if (type.equals("chartcard5")) 
+		{
+			return chartSchemaLine();
+		}
+		
+		else
+			return chartSchemaLine();
+			//return chartSchemaPie();
+	}
+
+	@RequestMapping(value = "/getFields", method = RequestMethod.POST)
+	public @ResponseBody String getFields(String type) {
+		//DBCHExample e = new DBCHExample();
+		//e.main();
+		return tableSchema();
+	}
+	
+	
+	
+	
+
+	@RequestMapping(value = "/getFieldsvalue", method = RequestMethod.POST)
+	public @ResponseBody List<ChartEntity> getFieldsvalue(String tablename,String colname) {
+		
+		
+		 System.out.println("tablename:::::::"+tablename);
+
+		 tablename = "PT84430568S";
+		 
+		 List<ChartEntity> arr = new ArrayList<ChartEntity>();
+		 
+		 String filenameQ = "select  "+colname+",count() as cnt  from cafebot."+tablename+" "
+		 		+ " group by "+colname+"  "
+		 		+ " order by "+colname+" Asc";
+		     
+		     PreparedStatement ps = null;
+			              
+			try {
+				
+				System.out.println("filenameQ::::::::"+filenameQ);
+				
+				ps = con.prepareStatement(filenameQ);
+			    ResultSet rs = ps.executeQuery();
+			    int count =0 ;
+				while (rs.next()) 
+				{
+					ChartEntity ch = new ChartEntity();
+					ch.setViz_type(rs.getString(1));
+					ch.setSlice_name(rs.getString(2));
+					arr.add(ch);
+				count++;
+					
+				}
+				
+			}catch (Exception e) {
+				System.out.println("error getting columnname list:::"+e.toString());
+				// TODO: handle exception
+			}
+		
+	System.out.println("arr:::::"+arr);	
+		
+		
+		return arr;
+	}
+	
+	
+	
+	public static String tableSchema() {
+		String lists = "[{\"colname\":\"campaign\",\"datatype\":\"number\",\"symbol\":\"#\"},"
+				+ "{\"colname\":\"age\",\"datatype\":\"number\",\"symbol\":\"#\"},"
+				+ "{\"colname\":\"job\",\"datatype\":\"text\",\"symbol\":\"Aa\"},"
+				+ "{\"colname\":\"marital\",\"datatype\":\"text\",\"symbol\":\"Aa\"},"
+				+ "{\"colname\":\"education\",\"datatype\":\"text\",\"symbol\":\"Aa\"},"
+				+ "{\"colname\":\"default\",\"datatype\":\"text\",\"symbol\":\"Aa\"},"
+				+ "{\"colname\":\"balance\",\"datatype\":\"number\",\"symbol\":\"#\"},"
+				+ "{\"colname\":\"housing\",\"datatype\":\"text\",\"symbol\":\"Aa\"},"
+				+ "{\"colname\":\"loan\",\"datatype\":\"text\",\"symbol\":\"Aa\"},"
+				+ "{\"colname\":\"contact\",\"datatype\":\"text\",\"symbol\":\"Aa\"},"
+				+ "{\"colname\":\"day\",\"datatype\":\"number\",\"symbol\":\"#\"},"
+				+ "{\"colname\":\"month\",\"datatype\":\"text\",\"symbol\":\"Aa\"},"
+				+ "{\"colname\":\"duration\",\"datatype\":\"number\",\"symbol\":\"#\"},"
+				+ "{\"colname\":\"pdays\",\"datatype\":\"number\",\"symbol\":\"#\"},"
+				+ "{\"colname\":\"previous\",\"datatype\":\"number\",\"symbol\":\"#\"},"
+				+ "{\"colname\":\"poutcome\",\"datatype\":\"text\",\"symbol\":\"Aa\"},"
+				+ "{\"colname\":\"y\",\"datatype\":\"text\",\"symbol\":\"Aa\"}]";
+
+		return lists;
+	}
+
+	
+	
+	@RequestMapping(value = "/getFieldsList", method = RequestMethod.POST)
+	public @ResponseBody String getFieldsList(String tableid) {
+		
+		
+		 System.out.println("tableid:::::::"+tableid);
+
+		 //get file id by table id 
+		 int fileid=2896;  //getFileid(tableid);
+		String filenameQ = "select columnname,datatype from fileschema where fileid ="+fileid+" order by columnname Asc";
+		     
+		             String lists = "[";      
+		     PreparedStatement ps = null;
+			              
+			try {
+				
+				System.out.println("filenameQ::::::::"+filenameQ);
+				
+				ps = conpg2.prepareStatement(filenameQ);
+			    ResultSet rs = ps.executeQuery();
+			    int count =0 ;
+				while (rs.next()) 
+				{
+					//ChartEntity ch = new ChartEntity();
+					//ch.setViz_type(rs.getString(1));
+					//ch.setSlice_name(rs.getString(2));
+					//arr.add(ch);
+					
+					String symbol ="Aa";
+					String datatype = rs.getString(2); 
+					if (rs.getString(2).equalsIgnoreCase("int") ) 
+					{
+						symbol ="#";
+						datatype ="number";
+					}
+					else if(rs.getString(2).equalsIgnoreCase("float"))
+					{      
+						symbol ="f";
+						datatype ="number";
+					}
+					else if (rs.getString(2).equalsIgnoreCase("datetime"))
+					{
+						symbol ="T";
+						datatype ="time";
+					}
+					   
+				if (count == 0) 
+				{
+		             lists += "{\"colname\":\" "+rs.getString(1)+"\",\"datatype\":\""+datatype+"\" ,\"symbol\":\""+symbol+"\"  }";
+				}	
+				else 
+				{
+		             lists += ",{\"colname\":\" "+rs.getString(1)+"\",\"datatype\":\""+datatype+"\" ,\"symbol\":\""+symbol+"\"  }";
+
+				}
+				count++;
+					
+				}
+				
+				
+				lists += "]";
+				
+			}catch (Exception e) {
+				System.out.println("error getting columnname list:::"+e.toString());
+				// TODO: handle exception
+			}
+		
+		
+		return lists;
+	}
+	
+
+	
+	
+	@RequestMapping(value = "/getTotalRecordCount", method = RequestMethod.POST)
+	public @ResponseBody String getTotalRecordCountt(String tableid) {
+		
+		
+		 System.out.println("tableid:::::::"+tableid);
+
+		String filenameQ = "select count() as cnt from cafebot."+tableid+" ";
+		     
+		       String lists = "";      
+		     PreparedStatement ps = null;
+			              
+			try {
+				
+				System.out.println("filenameQ count::::::::"+filenameQ);
+				
+				ps = con.prepareStatement(filenameQ);
+			    ResultSet rs = ps.executeQuery();
+			    int count =0 ;    
+				while (rs.next()) 
+				{
+					lists = String.valueOf(rs.getInt(1));
+				}
+				
+				
+			}catch (Exception e) 
+			{
+				lists ="-1";
+				System.out.println("error getting columnname list:::"+e.toString());
+				// TODO: handle exception
+			}
+		
+		
+		return lists;
+	}
+	
+	
+	
+	public int getFileid(String tabelname) 
+	{    
+		
+		int fileid =0;
+		String filenameQ = "select id from file where tablename='"+tabelname+"' and isoriginal=1 order by id desc limit 1";
+		  
+		  System.out.println("filenameQ:::::"+filenameQ);
+		  PreparedStatement ps = null;   
+			List<ChartEntity> arr = new ArrayList<ChartEntity>();
+			
+			try {   
+				ps = conpg2.prepareStatement(filenameQ);
+			    ResultSet rs = ps.executeQuery();    
+			    
+				while (rs.next()) 
+				{
+					fileid = rs.getInt(1);
+				}
+				
+			}catch (Exception e) {
+				fileid = 0;
+				System.out.println("error getting tablelist:::"+e.toString());
+				// TODO: handle exception
+			}
+			
+			System.out.println("table list:::::"+arr.toString());
+		//return arr.toString();
+			return fileid;	
+	}
+
+	
+	
+	@RequestMapping(value = "/getTablelist", method = RequestMethod.POST)
+	@ResponseBody    
+	public ResponseEntity<?> getTablelist() 
+	{    
+		  String filenameQ = "select fileid,fname from filename where status =6 order by id desc limit 250";
+		  PreparedStatement ps = null;   
+			List<ChartEntity> arr = new ArrayList<ChartEntity>();
+			
+			try {   
+				ps = conpg2.prepareStatement(filenameQ);
+			    ResultSet rs = ps.executeQuery();    
+			    
+				while (rs.next()) 
+				{
+					ChartEntity ch = new ChartEntity();
+					ch.setViz_type(rs.getString(1));
+					ch.setSlice_name(rs.getString(2));
+					arr.add(ch);
+				}
+				
+			}catch (Exception e) {
+				System.out.println("error getting tablelist:::"+e.toString());
+				// TODO: handle exception
+			}
+			
+			System.out.println("table list:::::"+arr.toString());
+		//return arr.toString();
+			return new ResponseEntity<List>(arr,HttpStatus.OK);	
+	}
+
+	
+	
+	@RequestMapping(value = "/getDashboardlist", method = RequestMethod.POST)
+	@ResponseBody    
+	public ResponseEntity<?> getDashboardlist() 
+	{    
+		  String filenameQ = "select id,dashboard_title from dashboards order by id desc";
+		  
+		  PreparedStatement ps = null;   
+			
+		  List<ChartEntity> arr = new ArrayList<ChartEntity>();
+			
+			try {   
+				ps = conpg.prepareStatement(filenameQ);
+			    ResultSet rs = ps.executeQuery();    
+			    
+				while (rs.next()) 
+				{
+					ChartEntity ch = new ChartEntity();
+					ch.setViz_type(rs.getString(1));
+					ch.setSlice_name(rs.getString(2));
+					arr.add(ch);
+				}
+				
+			}catch (Exception e) {
+				System.out.println("error getting dashboard list :::"+e.toString());
+				// TODO: handle exception
+			}
+			
+			System.out.println("dashboard list:::::"+arr.toString());
+		//return arr.toString();
+			return new ResponseEntity<List>(arr,HttpStatus.OK);	
+	}
+	
+	
+	@RequestMapping(value = "/getDashboardtablist", method = RequestMethod.POST)
+	@ResponseBody    
+	public ResponseEntity<?> getDashboardtablist(String dashid) 
+	{    
+		
+		List<String> temparr= new ArrayList<String>();
+		List<ChartEntity> arr = new ArrayList<ChartEntity>();
+		
+		try {
+		temparr =getTab(dashid);
+		
+		for(int k=0;k< temparr.size();k++) 
+		{
+			ChartEntity ch = new ChartEntity();
+			
+			String str [] = temparr.get(k).split("#_#");
+			System.out.println("str[0]:::::"+str[0]);
+			ch.setViz_type(str[0]);
+			ch.setSlice_name(str[1]);
+			arr.add(ch);
+		}
+		System.out.println("arr tab list :::"+arr.toString());
+		}catch (Exception e) 
+		{
+			System.out.println("error tab list ::::"+e.toString());
+			String uidname = UUID.randomUUID().toString();
+			temparr.add(uidname);
+			// TODO: handle exception
+		}
+		return new ResponseEntity<List>(arr,HttpStatus.OK);	
+	}
+	
+	
+	
+	public List<String> getTab(String dashID) throws JsonMappingException, JsonProcessingException	
+	{
+		
+		List<String> lstab = new ArrayList<String>();
+		
+		PreparedStatement ps = null;
+		String filequery = " select id, position_json, tabscount from dashboards where id = " + dashID;
+		List<ChartEntity> list = new ArrayList<ChartEntity>();
+		int id=0;    
+	    String position_json="";
+	    //int tabscount=0;
+		try {
+			ps = conpg.prepareStatement(filequery);
+		    ResultSet rs = ps.executeQuery();
+		    
+			while (rs.next()) 
+			{
+				id = rs.getInt(1);
+				position_json = rs.getString(2);
+				//tabscount=rs.getInt(3);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		List<ChartEntity> listofcharts = getDashCharts("1");
+		
+		JsonFactory jsonFactory = new JsonFactory();
+		ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
+
+		JsonNode arrayNode = objectMapper.readTree(position_json);
+		
+		
+			if (arrayNode.isArray()) 
+			{
+				//System.out.println("dashjsonNode"+arrayNode);
+			for (JsonNode jsonNode : arrayNode) 
+			{
+    
+				String tabid=jsonNode.get("tabid").asText();
+				String tabname=jsonNode.get("tabname").asText();
+				
+				if (!lstab.contains(tabname)) 
+				{
+					lstab.add(tabid+"#_#"+tabname);
+				}
+				
+			}
+			}
+			
+			System.out.println("lstab:::::"+lstab.toString());
+			return lstab;
+			
+		
+		}
+	
+	
+	
+	public static String chartSchemaLine() {
+		String varlists = "[{\"series\": \"X-Axis\",\"datatype\": \"number,time\",\"symbol\":\"#,T\",\"mandatory\":\"true\",\"aggregation\":\"false\",\"multiple\":\"false\"},"
+				+ "{\"series\": \"Y-Axis\",\"datatype\": \"number,time\",\"symbol\":\"#,T,Multi\",\"mandatory\":\"true\",\"aggregation\":\"true\",\"multiple\":\"true\"},"
+				+ "{\"series\": \"Lines\",\"datatype\": \"number,text,time\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"false\",\"multiple\":\"false\"}]";
+//				+ "{\"series\": \"Color\",\"datatype\": \"number,text,time\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"false\"},"
+//				+ "{\"series\": \"Series\",\"datatype\": \"number,text,time\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"false\"}]";
+		return varlists;
+	}
+
+	public static String chartSchemaPie() {
+		String varlists = "[{\"series\": \"Arcs\",\"datatype\": \"number\",\"symbol\":\"#,Multi\",\"mandatory\":\"true\",\"aggregation\":\"true\",\"multiple\":\"true\"},"
+				+ "{\"series\": \"Series\",\"datatype\":\"number,text,time\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"false\",\"multiple\":\"false\"}]";
+		return varlists;
+	}
+
+	
+	public static String chartSchemaDonut() {
+		String varlists = "[{\"series\": \"Arcs\",\"datatype\": \"number\",\"symbol\":\"#,Multi\",\"mandatory\":\"true\",\"aggregation\":\"true\",\"multiple\":\"true\"},"
+				+ "{\"series\": \"Series\",\"datatype\":\"number,text,time\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"false\",\"multiple\":\"false\"}]";
+		return varlists;
+	}
+
+	
+	public static String chartHistogram() 
+	{
+	
+		String varlists = "[{\"series\": \"X-Axis\",\"datatype\": \"number,time\",\"symbol\":\"#,T\",\"mandatory\":\"true\",\"aggregation\":\"false\",\"multiple\":\"false\"},"
+				+ "{\"series\": \"Y-Axis\",\"datatype\": \"number,time\",\"symbol\":\"#,T,Multi\",\"mandatory\":\"true\",\"aggregation\":\"true\",\"multiple\":\"true\"},"
+				+ "{\"series\": \"X-Axis\",\"datatype\": \"number,text,time\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"false\",\"multiple\":\"false\"}]";
+		return varlists;
+		 //x axis with and condition between two x -axis
+		
+	}
+
+	
+	
+	public static String chartBarsSingle() 
+	{
+	 	String varlists = "[{\"series\": \"X-Axis\",\"datatype\": \"number,text,time\",\"symbol\":\"#,T,Multi\",\"mandatory\":\"true\",\"aggregation\":\"false\",\"multiple\":\"false\"},"
+	 			+ "{\"series\": \"Y-Axis\",\"datatype\": \"number,time\",\"symbol\":\"#,T\",\"mandatory\":\"true\",\"aggregation\":\"true\",\"multiple\":\"true\"}"
+	 			//+ ","
+	 			//+ "{\"series\": \"Y-Axis\",\"datatype\": \"number,text,time\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"true\",\"multiple\":\"false\"}"
+	 			+ "]";
+	 	return varlists;
+	}
+
+	
+	
+	public static String chartBars() 
+	{
+	 
+	 	String varlists = "[{\"series\": \"X-Axis\",\"datatype\": \"number,text,time\",\"symbol\":\"#,T,Multi\",\"mandatory\":\"true\",\"aggregation\":\"false\",\"multiple\":\"false\"},"
+	 			+ "{\"series\": \"Y-Axis\",\"datatype\": \"number,time\",\"symbol\":\"#,T\",\"mandatory\":\"true\",\"aggregation\":\"true\",\"multiple\":\"true\"}"
+	 			+ ","
+	 			+ "{\"series\": \"Y-Axis\",\"datatype\": \"number,text,time\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"true\",\"multiple\":\"false\"}"
+	 			+ "]";
+	 	return varlists;
+	 	 //x axis with and condition between two x -axis
+	}
+	
+	
+	
+	public static String chartMix() 
+	{
+	 	String varlists = "[{\"series\": \"X-Axis\",\"datatype\": \"number,time\",\"symbol\":\"#,T\",\"mandatory\":\"true\",\"aggregation\":\"true\",\"multiple\":\"true\"},"
+	 			+ "{\"series\": \"Y-Axis\",\"datatype\": \"number,text,time\",\"symbol\":\"#,T,Multi\",\"mandatory\":\"true\",\"aggregation\":\"false\",\"multiple\":\"false\"}]";
+	 	return varlists;
+	 	 //x axis with and condition between two x -axis
+	}
+	
+	public static String chartStacked() 
+	{
+	
+		String varlists = "[{\"series\": \"X-Axis\",\"datatype\": \"number,time\",\"symbol\":\"#,T\",\"mandatory\":\"true\",\"aggregation\":\"false\",\"multiple\":\"false\"},"
+				+ "{\"series\": \"Y-Axis\",\"datatype\": \"number,time\",\"symbol\":\"#,T,Multi\",\"mandatory\":\"true\",\"aggregation\":\"true\",\"multiple\":\"true\"},"
+				+ "{\"series\": \"X-Axis\",\"datatype\": \"number,text,time\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"false\",\"multiple\":\"false\"}]";
+		return varlists;
+		 //x axis with and condition between two x -axis
+	}
+	
+	
+	
+	
+	public static String chartMixed() 
+	{
+	
+		String varlists = "[{\"series\": \"X-Axis\",\"datatype\": \"number,time\",\"symbol\":\"#,T\",\"mandatory\":\"true\",\"aggregation\":\"false\",\"multiple\":\"false\"},"
+				+ "{\"series\": \"Y-Axis\",\"datatype\": \"number,time\",\"symbol\":\"#,T,Multi\",\"mandatory\":\"true\",\"aggregation\":\"true\",\"multiple\":\"true\"}]";
+		return varlists;
+		 //x axis with and condition between two x -axis
+		
+	}
+	
+	
+	public static String chartSchemaScatters() {
+		String varlists = "[{\"series\": \"X-Axis\",\"datatype\": \"number,text,time\",\"symbol\":\"#,T\",\"mandatory\":\"true\",\"aggregation\":\"false\",\"multiple\":\"false\"},"
+				+ "{\"series\": \"Y-Axis\",\"datatype\": \"number,text,time\",\"symbol\":\"#,T,Multi\",\"mandatory\":\"true\",\"aggregation\":\"false\",\"multiple\":\"false\"},"
+				+ "{\"series\": \"Lines\",\"datatype\": \"number,text,time\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"false\",\"multiple\":\"false\"},"
+				+ "{\"series\": \"Lines\",\"datatype\": \"number\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"false\",\"multiple\":\"false\"},"
+				+ "{\"series\": \"Lines\",\"datatype\": \"number,text,time\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"false\",\"multiple\":\"false\"}]";
+		return varlists;
+	}
+
+	
+	public static String chartSchemabubbles() {
+		String varlists = "[{\"series\": \"X-Axis\",\"datatype\": \"number,text,time\",\"symbol\":\"#,T\",\"mandatory\":\"true\",\"aggregation\":\"false\",\"multiple\":\"false\"},"
+				+ "{\"series\": \"Y-Axis\",\"datatype\": \"number,text,time\",\"symbol\":\"#,T,Multi\",\"mandatory\":\"true\",\"aggregation\":\"false\",\"multiple\":\"false\"},"
+				+ "{\"series\": \"Lines\",\"datatype\": \"number\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"true\",\"multiple\":\"false\"},"
+				+ "{\"series\": \"Lines\",\"datatype\": \"number\",\"symbol\":\"#,Aa,T\",\"mandatory\":\"false\",\"aggregation\":\"true\",\"multiple\":\"false\"}]";
+		return varlists;
+	}
+	
+	
+	
+	
+	/*
+	 * public List<Map<?, ?>> getData() { File input = new
+	 * File("C:\\Users\\amitj\\Desktop\\Use Cases Data\\Claim Propensity\\claim_chart.csv"
+	 * ); //File output = new File("/x/data.json"); List<Map<?, ?>> data = null; try
+	 * { data = readObjectsFromCsv(input); } catch (IOException e) {
+	 * e.printStackTrace(); } //writeAsJson(data, output); return data;
+	 * 
+	 * 
+	 * }
+	 */
+	
+	
+	
+	
+	public static String getDataCSV() {
+		File input = new File("C:\\Users\\amitj\\Desktop\\Use Cases Data\\Claim Propensity\\claim_chart.csv");
+
+		String json = null;
+		try 
+		{
+			
+			CsvSchema csv = CsvSchema.emptySchema().withHeader();
+			CsvMapper csvMapper = new CsvMapper();
+			MappingIterator<Map<?, ?>> mappingIterator = csvMapper.reader().forType(Map.class).with(csv)
+					.readValues(input);
+			List<Map<?, ?>> list = mappingIterator.readAll();
+
+			/*
+			 * Map<String, Long> counting = list.stream().collect(
+			 * Collectors.groupingBy(item::getName, Collectors.counting()));
+			 * 
+			 * System.out.println(counting);
+			 * 
+			 * Map<String, Integer> sum = list.stream().collect(
+			 * Collectors.groupingBy(Item::getName, Collectors.summingInt(Item::getQty)));
+			 * 
+			 * System.out.println(sum);
+			 */
+
+			ObjectMapper objectMapper = new ObjectMapper();
+   			      json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(list);
+			
+			// json =json.replace("\"", "'");
+			// System.out.println(json);
+
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+		}
+		
+		return json;
+	}
+
+	
+	public static List<Map<?, ?>> readObjectsFromCsv(File file) throws IOException 
+	{
+		CsvSchema bootstrap = CsvSchema.emptySchema().withHeader();
+		CsvMapper csvMapper = new CsvMapper();
+		MappingIterator<Map<?, ?>> mappingIterator = csvMapper.reader(Map.class).with(bootstrap).readValues(file);
+
+		return mappingIterator.readAll();
+	}
+
+	
+	public static void writeAsJson(List<Map<?, ?>> data, File file) throws IOException 
+	{
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.writeValue(file, data);
+	}
+
+	
+	public static SQLPojo pieSQL(SQLPojo sql, String series, String field, String agg) throws IOException 
+	{
+		
+		System.out.println("series pie:::::"+series);
+		
+		if (series.equals("Arcs")) 
+		{
+			if (agg != "" || agg != null) {
+				sql.setAgg(agg, field);
+				sql.setIsAgg(true);
+			}
+		}
+		
+		if (series.equals("Series")) {
+			sql.setFields(field);
+		}
+		
+		return sql;
+	
+	}
+	
+	
+	public static SQLPojo lineSQL(SQLPojo sql, String series, String field, String agg) throws IOException 
+	{
+		//{"Series":"Arcs","Field":"campaign","Agg":"Sum"}
+		System.out.println("series line:::::"+series);
+		if (series.equals("Y-Axis")) {
+			if (agg != "" || agg != null) {
+				sql.setAgg(agg, field);
+				sql.setAggColumnlist(agg, field);
+				sql.setIsAgg(true);
+			}
+		}
+		if (series.equals("X-Axis")) {
+			sql.setFields(field);
+		}
+		
+		/*
+		 * if (series.equals("Lines")) { sql.setFields(field); }
+		 */
+			
+		return sql;
+	}
+	
+	
+	public static SQLPojo barSQL(SQLPojo sql, String series, String field, String agg,
+			int isbin,String binTypeNode,String binSizeNode,String binCountNode,
+			String displaytopvalueNode,String othersNode,int displaytopCheck
+			) throws IOException 
+	{
+		
+
+		//{"Series":"Arcs","Field":"campaign","Agg":"Sum"}
+		System.out.println("series line:::::"+series);
+		if (series.equals("X-Axis")) 
+		{
+			sql.setFields(field);
+			sql.setIsBin(isbin);
+			sql.setBinType(binTypeNode);
+			sql.setBinSize(binSizeNode);
+			sql.setBinCount(binCountNode);
+		}
+		if (series.equals("Y-Axis")) 
+		{
+			if (displaytopCheck ==1) 
+			{
+				sql.setDisplaytopvalue(displaytopvalueNode);
+				sql.setOthers(othersNode);
+			}
+			else if (agg != "" || agg != null) 
+			{
+				sql.setAgg(agg, field);
+				sql.setAggColumnlist(agg, field);
+				sql.setIsAgg(true);
+			}
+			
+		}
+		
+		/*
+		 * if (series.equals("Lines")) { sql.setFields(field); }
+		 */
+			
+		return sql;
+	}
+	
+	
+	public String chartType(String chartid) 
+	{
+		String charttype ="line";
+		
+		if (chartid.equalsIgnoreCase("chartcard1")) 
+		{
+			charttype ="Histogram";
+		}
+		else if (chartid.equalsIgnoreCase("chartcard2")) 
+		{
+			charttype ="Bar";
+		}
+		else if (chartid.equalsIgnoreCase("chartcard3")) 
+		{
+			charttype ="Stacked Bar Chart";
+		}
+		else if (chartid.equalsIgnoreCase("chartcard4")) 
+		{
+			charttype ="Area Chart";
+		}
+		else if (chartid.equalsIgnoreCase("chartcard5")) 
+		{
+			charttype ="Line Chart";
+		}
+		
+		return charttype;
+		
+	}
+	
+
+	
+	public String addcharttoTab(String dashID,int sliceid,String tabid,String tabname) throws JsonMappingException, JsonProcessingException	
+	{
+		
+		PreparedStatement ps = null;
+		String filequery = " select id, position_json, tabscount from dashboards where id = " + dashID;
+		
+		System.out.println("filequery::::"+filequery);
+		
+		List<ChartEntity> list = new ArrayList<ChartEntity>();
+		int id=0;    
+	    String position_json="";
+	    //int tabscount=0;
+		try 
+		{
+			ps = conpg.prepareStatement(filequery);
+		    ResultSet rs = ps.executeQuery();
+		    
+			while (rs.next()) 
+			{
+				id = rs.getInt(1);
+				position_json = rs.getString(2);
+				//tabscount=rs.getInt(3);
+			}
+		} catch (SQLException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		List<ChartEntity> listofcharts = getDashCharts("1");
+		
+		JsonFactory jsonFactory = new JsonFactory();
+		ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
+
+		JsonNode arrayNode = objectMapper.readTree(position_json);
+	
+		String posJson ="";
+		
+		System.out.println("position_json::::::::::"+position_json);
+		
+		if (arrayNode.isArray()) 
+		{
+			//System.out.println("dashjsonNode"+arrayNode);
+			
+			  int ismatched= 0;	
+			  String  tempposJson ="{\"tabid\":\""+tabid+"\",\"tabname\":\""+tabname+"\",\"childs\":[";
+			  int countout =0;
+	  
+	for (JsonNode jsonNode : arrayNode) 
+		{
+			String tabid_ =jsonNode.get("tabid").asText();
+			String tabname_ =jsonNode.get("tabname").asText();
+			
+			System.out.println("tabid_::::::::::::::::::::::"+tabid_);
+			     
+			if (tabid_.equalsIgnoreCase(tabid)) 
+			{
+				System.out.println("inside################################");
+				ismatched =1;
+				
+				 tempposJson ="{\"tabid\":\""+tabid_+"\",\"tabname\":\""+tabname_+"\",\"childs\":[";
+				
+				JsonNode arrayNode1 = jsonNode.get("childs");
+				int countin =0 ;
+				for (JsonNode jsonNode1 : arrayNode1) 
+				{
+					
+					if (countin ==0) 
+					{
+						tempposJson += jsonNode1;	
+					}
+					else 
+					{
+						tempposJson += ","+jsonNode1;
+					}
+					countin++;
+				}
+				
+				if (tempposJson.equalsIgnoreCase("")) 
+				{
+					tempposJson +="{\"chartId\":\""+sliceid+"\",\"x\":6,\"y\":0,\"w\":6,\"h\":4}]}";	
+				}
+				else 
+				{
+					tempposJson +=",{\"chartId\":\""+sliceid+"\",\"x\":6,\"y\":0,\"w\":6,\"h\":4}]}";
+				}
+				
+				System.out.println("tempposJson::::::::::::inside::::::::::::::::"+tempposJson);
+				
+			}
+	    else 
+	    { 
+	    	
+	    	System.out.println("jsonNode::::::::::::::"+jsonNode);
+	    	if (countout ==0) 
+	    	{
+	    		posJson += jsonNode; 
+	    	}
+	    	else 
+	    	{
+	    		posJson += ","+jsonNode; 
+	    	}
+	    	
+	    }
+			
+			
+			if (ismatched ==1) 
+			{
+				//break;
+			}	
+		
+			
+			countout++;
+		}
+		
+		
+			/*
+			 * if (ismatched ==0) { // tempposJson
+			 * ="{\"tabid\":\""+tabid+"\",\"tabname\":\""+tabname+"\",\"childs\"[:"; if
+			 * (posJson.equalsIgnoreCase("")) { tempposJson
+			 * +="{\"x\":\"6\",\"y\":\"0\",\"tabid\":\""+tabid+"\",\"tabname\":\""+tabname+
+			 * "\",\"chartid\":"+sliceid+"}]}"; } else { tempposJson
+			 * +=",{\"x\":\"6\",\"y\":\"0\",\"tabid\":\""+tabid+"\",\"tabname\":\""+tabname+
+			 * "\",\"chartid\":"+sliceid+"}]}"; }
+			 * 
+			 * }
+			 */
+	
+		
+		posJson = tempposJson+posJson;
+		
+		posJson = "["+posJson+"]";
+		
+		System.out.println("posJson:::::::::"+posJson);
+		}
+		
+		
+		return posJson;
+
+	}
+	
+	
+	
+	
+}
+

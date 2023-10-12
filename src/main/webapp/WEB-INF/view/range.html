@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+</head>
+<body class="full-screen menu-position-side menu-side-left color-scheme-dark">
+
+  <div class="all-wrapper solid-bg-all">
+    <div class="content-i">
+      <div class="content-box">
+        <div class="element-wrapper"> 
+
+
+          <div class="cb-range-css" style="background-color: #141619;">
+            <table>
+              <tbody><tr>
+                <td>
+                  <div class="cb-range-form-div">
+                    <div class="cb-range-Label">
+                      <span class="label"><div class="cb-range-text">Lower Bound</div></span>
+                      <div>
+                        <div class="cb-input-css">
+                          <input type="text" class="form-control" id="lbound" disabled="disabled">  
+                        </div>
+                      </div>
+                    </div>
+                  </div>          
+                </td>
+                <td>
+                  <div class="cb-range-form-div">
+                    <div class="cb-range-Label">
+                      <span class="label"><div class="cb-range-text">Upper Bound</div></span>
+                      <div>
+                        <div class="cb-input-css">
+                          <input type="text" class="form-control" id="ubound" disabled="disabled">    
+                        </div>
+                      </div>
+                    </div>
+                  </div>                      
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="cb-range-form-div">
+                    <div class="cb-range-Label">
+                      <div class="form-inline">
+                        <div class="cb-form">               
+                          <label class="css-12xei9w">
+                            <input type="checkbox" class="css-1alx94u form-control mb-2 mr-sm-2 mb-sm-0" id="customrangecheck" title="Customized">
+                            <span class="css-a2zrvp"></span> 
+                            <span class="css-a3753h-Label">  Customized</span>               
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>        
+                </td>
+                <td>
+                  <div class="cb-range-form-div">
+                    <div class="cb-range-Label">
+                      <div>
+                        <div class="cb-input-css">
+                          <input type="number" class="form-control rangeitr" id="rangeitr" max="10" min="2" value="2" onchange="getrangeITRvalue()">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody></table>
+
+            <div class="cb-range-form-div">
+            <div id="TextBoxContainer"></div>
+          </div>
+
+
+
+
+
+
+
+            <button class="cb-cancel" onclick="coldiv()">add</button>
+            <div class="cb-button-layout">
+              <input type="button" id="btnDBExecute" name="btnDBExecute" class="cb-primary" onclick="btnClick()" value="Save" >
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script  src='/resources/js/numericrange.js'></script>
+
+</body>
+</html>
